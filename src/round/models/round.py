@@ -15,6 +15,7 @@ class Round(BaseModel):
     game_num = models.PositiveIntegerField(
         verbose_name=_("Game number"),
     )
+    # NOTE: need to be changed , to store multiple winners
     winner_wallet = models.CharField(
         verbose_name=_("Winner wallet"),
         max_length=1024,
