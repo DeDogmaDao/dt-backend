@@ -2,10 +2,43 @@ from django.utils.translation import gettext_lazy as _
 
 class BloodType:
     ZEUS = "zeos"
+    POSEIDON = "poseidon"
+    HADES = "hades"
+    HESTIA = "hestia"
+    HERA = "hera"
+    APHRODITE = "aphrodite"
+    ARTEMIS = "artemis"
+    ATENA = "atena"
+    ARES = "ares"
+    HERMES = "hermes"
 
     CHOICES = [
         (
             ZEUS, _("Zeos")
+        ),
+        (
+            POSEIDON, _("Poseidon")
+        ),
+        (
+            HADES, _("Hades")
+        ),
+        (
+            HESTIA, _("Hestia")
+        ),
+        (
+            HERA, _("Hera")
+        ),
+        (
+            APHRODITE, _("Aphrodite")
+        ),
+        (
+            ATENA, _("Atena")
+        ),
+        (
+            ARES, _("Ares")
+        ),
+        (
+            HERMES, _("Hermes")
         ),
     ]
 
@@ -14,6 +47,7 @@ class CounterType:
     DOUBLE_COUNTER = "double_counter"
     MAGNET = "magnet"
     COUNTER_BREAKER = "counter_breaker"
+    SPECIAL_DROP = "special_drop"
 
     CHOICES = [
         (
@@ -28,6 +62,9 @@ class CounterType:
         (
             COUNTER_BREAKER, _("Counter breaker")
         ),
+        (
+            SPECIAL_DROP, _("Special drop")
+        )
     ]
 
 class Rarity:
