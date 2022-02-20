@@ -6,3 +6,4 @@ env
 .env
 *.sqlite3
 *.db
+.DS_store
