@@ -15,19 +15,7 @@ class Round(BaseModel):
     game_num = models.PositiveIntegerField(
         verbose_name=_("Game number"),
     )
-    # NOTE: need to be changed , to store multiple winners
-    winner_wallet = models.CharField(
-        verbose_name=_("Winner wallet"),
-        max_length=1024,
-    )
-    winner_nft = models.ForeignKey(
-        verbose_name=_("Winner nft"),
-        to="nft.NFT",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-    winner_prize = models.PositiveIntegerField(
+    winners_total_prize = models.PositiveIntegerField(
         verbose_name=_("Winner prize"),
     )
     eth_block_number = models.CharField(

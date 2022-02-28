@@ -32,3 +32,21 @@ class DaysEnum:
             DAY_SEVEN, _("Day seven")
         )
     ]
+
+class FulfillStatus:
+    FULFILLED = "fulfilled"
+    UNFULFILLED = "unfulfilled"
+    PARTIALLY_FULFILLED = "partially_fulfilled"
+
+    CHOICES = [
+        (
+            FULFILLED, _("Fulfilled")
+        ),
+        (
+            UNFULFILLED, _("Unfulfilled")
+        ),
+        (
+            PARTIALLY_FULFILLED, _("Partially fulfilled")
+        ),
+    ]
+

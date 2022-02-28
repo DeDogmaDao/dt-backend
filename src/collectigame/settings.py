@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     "card_feature",
     "nft",
     "round",
-    "whitelist"
+    "whitelist",
+    "blockchain_transaction"
 ]
 
 MIDDLEWARE = [
