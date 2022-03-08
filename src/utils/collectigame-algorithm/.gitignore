@@ -1,0 +1,11 @@
+nft_data
+game_data
+env
+.env
+__pycache__
+*.json
+winners.txt
+*.iml
+*.xml
+.idea
+.DS_Store
