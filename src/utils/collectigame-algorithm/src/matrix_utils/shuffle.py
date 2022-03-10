@@ -1,6 +1,6 @@
 import json
 import hashlib
-from matrix_utils.configs import Config
+from .configs import Config
 
 
 class Suffle:
