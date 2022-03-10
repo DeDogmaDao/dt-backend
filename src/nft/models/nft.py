@@ -1,5 +1,5 @@
 from django.db import models
-from nft.enums import BloodType, Rarity, CounterType
+from nft.enums import BloodType, Rarity, CounterType, Side
 from utils.base_model import BaseModel
 from django.utils.translation import gettext_lazy as _
 
@@ -20,6 +20,12 @@ class NFT(BaseModel):
     )
     counter = models.PositiveIntegerField(
         verbose_name=_("Counter")
+    )
+    side = models.CharField(
+        verbose_name=_("Side"),
+        max_length=100,
+        choices=Side.CHOICES,
+        null=True
     )
     multiply_num = models.PositiveIntegerField(
         verbose_name=_("Multiply number")

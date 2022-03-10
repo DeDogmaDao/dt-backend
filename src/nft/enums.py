@@ -79,3 +79,17 @@ class Rarity:
             GOD, _("God")
         ),
     ]
+
+
+class Side:
+    WILL = "will"
+    TALENT = "talent"
+
+    CHOICES = [
+        (
+            WILL, _("Will")
+        ),
+        (
+            TALENT, _("Talent")
+        ),
+    ]
