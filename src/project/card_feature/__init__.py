@@ -1,0 +1,1 @@
+default_app_config = "project.card_feature.apps.CardPointConfig"
