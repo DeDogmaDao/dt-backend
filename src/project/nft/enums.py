@@ -48,6 +48,7 @@ class CounterType:
     MAGNET = "magnet"
     COUNTER_BREAKER = "counter_breaker"
     SPECIAL_DROP = "special_drop"
+    NOTHING = "nothing"
 
     CHOICES = [
         (
@@ -64,6 +65,9 @@ class CounterType:
         ),
         (
             SPECIAL_DROP, _("Special drop")
+        ),
+        (
+            NOTHING, _("Nothing")
         )
     ]
 

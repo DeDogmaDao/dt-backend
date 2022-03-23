@@ -2,6 +2,7 @@ from django.db import models
 from project.utils.base_model import BaseModel
 from django.utils.translation import gettext_lazy as _
 
+
 class FullDeck(BaseModel):
     nft = models.ForeignKey(
         verbose_name=_("NFT"),

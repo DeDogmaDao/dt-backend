@@ -17,4 +17,7 @@ class Suffle:
             hash_of_hash = hashlib.sha512(hash_combined_to_num.encode()).hexdigest()
             nft_places[hash_of_hash] = i
         sorted_keys = sorted(nft_places)
-        return starter, sorted_keys
+        sorted_dict = {}
+        for i in sorted_keys:
+            sorted_dict[i] = nft_places[i]
+        return starter, sorted_dict

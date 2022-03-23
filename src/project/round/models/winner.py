@@ -4,6 +4,7 @@ from project.utils.base_model import BaseModel
 from project.round.enums import FulfillStatus
 from django.utils.translation import gettext_lazy as _
 
+
 class Winner(BaseModel):
     round = models.ForeignKey(
         to="round.Round",

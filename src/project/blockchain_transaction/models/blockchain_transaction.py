@@ -3,6 +3,7 @@ from project.blockchain_transaction.enums import TransactionStatus, TransactionT
 from project.utils.base_model import BaseModel
 from django.utils.translation import gettext_lazy as _
 
+
 class Transaction(BaseModel):
     from_wallet = models.CharField(
         verbose_name=_("From wallet"),

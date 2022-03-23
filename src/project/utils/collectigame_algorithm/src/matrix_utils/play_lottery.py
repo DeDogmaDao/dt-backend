@@ -48,7 +48,7 @@ class PlayLottery:
             return [candidate], False
 
     def check_winner(self, collection_item):
-        if self.counter == 0 or collection_item['properties'].get('is_breaker'):
+        if self.talent_counter == self.will_power_counter or collection_item['properties'].get('is_breaker'):
             return True
         return False
 
@@ -109,7 +109,7 @@ class PlayLottery:
             winners_nft.append(self.collection_data['collection'][w])
         printer += "winners places: " + str(winner_place) + ", winner nfts: " + str(winners_nft) + ", round: " + str(round) + ", was magnet on: " + str(self.magnet_is_on) + "magnet stole" + str(magnet_stole) + "\n"
         printer += "**********************************************\n"
-        if Config.STORE_GAME_PROCCESS:
+        if Config.STORE_GAME_PROCESS:
             with open('winners.txt', 'a') as f:
                 f.write(printer)
         return winner_place, winners_nft, round, self.magnet_is_on, magnet_stole

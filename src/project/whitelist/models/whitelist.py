@@ -2,6 +2,7 @@ from django.db import models
 from project.utils.base_model import BaseModel
 from django.utils.translation import gettext_lazy as _
 
+
 class Whitelist(BaseModel):
     nonce = models.PositiveIntegerField(
         verbose_name=_("nonce"),

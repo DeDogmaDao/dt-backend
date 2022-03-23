@@ -1,8 +1,8 @@
 class Config:
-    IS_BREAKER = "is_breaker"
-    IS_DOUBLER = "is_double"
-    IS_MAGNET = "is_magnet"
-    IS_ENHANCE = "is_enhance"
+    IS_BREAKER = "counter_breaker"
+    IS_DOUBLER = "double_counter"
+    IS_MAGNET = "magnet"
+    IS_ENHANCE = "enhancer"
     BREAKERS_COUNT = 10
     DOUBLES_COUNT = 300
     MAGNET_COUNT = 400
@@ -30,6 +30,6 @@ class Config:
         ]
     MAGNET_EFFECTIVE_ROUNDS = 3
     ALL_ROUNDS = 50
-    STORE_GAME_PROCCESS = False
+    STORE_GAME_PROCESS = False
     TOTAL_BLOCKS = 2000
     BASE_COUNTER = 5

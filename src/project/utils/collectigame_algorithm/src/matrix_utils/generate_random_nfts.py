@@ -1,7 +1,8 @@
 import os
 import json
-from matrix_utils.configs import Config
+from project.utils.collectigame_algorithm.src.matrix_utils.configs import Config
 from random import choice, randint, shuffle
+from project.nft.enums import Side
 
 
 class GenerateRandomNFT:
@@ -30,13 +31,20 @@ class GenerateRandomNFT:
         shuffle(counters_list)
         while len(range_1_5000):
             choosen_random = choice(range_1_5000)
+            counter = choice(counters_list)
+            side = Side.WILL
+            if counter < 0:
+                side = Side.TALENT
+                counter = abs(counter)
             self.random_cards.append(
                 {
                     "card_number": choosen_random,
                     "properties":{
                         "sum": randint(1, 100),
                         "mul": randint(1, 9),
-                        "counter": choice(counters_list)
+                        "side": side,
+                        "counter": counter,
+                        "counter_type": "nothing"
                     }
                 },
             )
@@ -47,7 +55,7 @@ class GenerateRandomNFT:
         rare_list = []
         for i in range(number_of_rare_cards):
             choosen_random = choice(cards_list)
-            self.random_cards[choosen_random-1]['properties'][property] = True
+            self.random_cards[choosen_random-1]['properties']["counter_type"] = property
             rare_list.append(self.random_cards[choosen_random-1])
             cards_list.remove(choosen_random)
         return rare_list
@@ -58,7 +66,8 @@ class GenerateRandomNFT:
 
         range_1_5000 = list(range(1, Config.TOTAL_NFTS + 1))
         for card in Config.SPECIAL_CARDS.keys():
-            special_cards = self.set_rare_cards(Config.SPECIAL_CARDS[card], range_1_5000, card) 
+            special_cards = self.set_rare_cards(Config.SPECIAL_CARDS[card], range_1_5000, card)
             self.open_and_create_file(special_cards, file_name=card)
+        return random_cards
 
-        self.open_and_create_file(random_cards, custom_filename='nft_collection.json')
+        # self.open_and_create_file(random_cards, custom_filename='nft_collection.json')

@@ -3,6 +3,7 @@ from project.nft.enums import BloodType, Rarity, CounterType, Side
 from project.utils.base_model import BaseModel
 from django.utils.translation import gettext_lazy as _
 
+
 class NFT(BaseModel):
     token_id = models.PositiveIntegerField(
         verbose_name=_("Token id")

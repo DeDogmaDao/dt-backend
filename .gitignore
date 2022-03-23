@@ -7,3 +7,4 @@ env
 *.sqlite3
 *.db
 .DS_store
+nft_data
