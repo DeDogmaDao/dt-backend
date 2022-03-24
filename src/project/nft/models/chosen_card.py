@@ -16,3 +16,7 @@ class ChosenCard(BaseModel):
         verbose_name=_("Total counter"),
         null=True
     )
+    magnet_status = models.BooleanField(
+        verbose_name=_("Magnet status"),
+        default=False
+    )

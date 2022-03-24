@@ -1,45 +1,46 @@
-import os
 import json
 from .configs import Config
+from project.nft.enums import Side, CounterType
 
 
 
 class PlayLottery:
-    def __init__(self, collection_data) -> None:
+    def __init__(self, collection_queryset, starter) -> None:
         self.talent_counter = Config.BASE_COUNTER
         self.will_power_counter = Config.BASE_COUNTER
         self.magnet_is_on = False
         self.magnet_counter = 0
-        self.all_cards_number = Config.TOTAL_NFTS + Config.ENHANCE_COUNT
-        self.collection_data = collection_data
+        self.all_cards_number = collection_queryset.count()
+        self.collection_data = collection_queryset
+        self.starter = starter
 
     def check_magnets_win(self, collection, candidate):
         magnet_winners = []
-        if collection['collection'][candidate]['properties'].get('is_magnet'):
+        if collection.get(deck_place=candidate).nft.speciality == CounterType.MAGNET:
             magnet_winners.append(candidate)
             return magnet_winners, True
 
         if candidate == 0:
-            if collection['collection'][self.all_cards_number-1]['properties'].get('is_magnet'):
-                magnet_winners.append(self.all_cards_number-1)
-            if collection['collection'][1]['properties'].get('is_magnet'):
-                magnet_winners.append(1)
+            if collection.get(deck_place=self.all_cards_number).speciality == CounterType.MAGNET:
+                magnet_winners.append(self.all_cards_number)
+            if collection.get(deck_place=2).nft.speciality == CounterType.MAGNET:
+                magnet_winners.append(2)
 
             if len(magnet_winners) > 0:
                 return magnet_winners, True
         
-        elif candidate == self.all_cards_number-1:
-            if collection['collection'][self.all_cards_number-2]['properties'].get('is_magnet'):
-                magnet_winners.append(self.all_cards_number-2)
-            if collection['collection'][0]['properties'].get('is_magnet'):
-                magnet_winners.append(0)
+        elif candidate == self.all_cards_number:
+            if collection.get(deck_place=self.all_cards_number-1).nft.speciality == CounterType.MAGNET:
+                magnet_winners.append(self.all_cards_number-1)
+            if collection.get(deck_place=1).nft.speciality == CounterType.MAGNET:
+                magnet_winners.append(1)
         
             if len(magnet_winners) > 0:
                 return magnet_winners, True
         else:
-            if collection['collection'][candidate+1]['properties'].get('is_magnet'):
+            if collection.get(deck_place=candidate+1).nft.speciality == CounterType.MAGNET:
                 magnet_winners.append(candidate+1)
-            if collection['collection'][candidate-1]['properties'].get('is_magnet'):
+            if collection.get(deck_place=candidate-1).nft.speciality == CounterType.MAGNET:
                 magnet_winners.append(candidate-1)
         
         if len(magnet_winners) > 0:
@@ -48,7 +49,8 @@ class PlayLottery:
             return [candidate], False
 
     def check_winner(self, collection_item):
-        if self.talent_counter == self.will_power_counter or collection_item['properties'].get('is_breaker'):
+        if self.talent_counter == self.will_power_counter or \
+                collection_item.nft.speciality == CounterType.COUNTER_BREAKER:
             return True
         return False
 
@@ -57,60 +59,93 @@ class PlayLottery:
         magnet_stole = False
         printer = ""
         winner_place = []
-        candidate = self.collection_data['starter']
+        chosen_card = []
+        candidate = self.starter
         round = 1
         for i in range(Config.ALL_ROUNDS):
+            item = self.collection_data.get(deck_place=candidate)
+
             printer += "round: " + str(round) + "\n"
-            printer += "counter is: " + str(self.counter) + "\n"
+            printer += "will power counter is: " + str(self.will_power_counter) + "\n"
+            printer += "talent counter is: " + str(self.talent_counter) + "\n"
             printer += "magnet is on? " + str(self.magnet_is_on) + "\n"
             printer += "candidate place: " + str(candidate) + "\n"
-            printer += "candidate nft: " + json.dumps(self.collection_data['collection'][candidate]) + "\n"
+            printer += "candidate nft: " + str(item.deck_place) + "\n"
             printer += "################################" + "\n"
             if self.magnet_counter != 0:
                 self.magnet_counter -= 1
             else:
                 self.magnet_is_on = False
-            item = self.collection_data['collection'][candidate]['properties']
-            self.counter += item['counter']
-            if self.check_winner(self.collection_data['collection'][candidate]):
+
+            if item.nft.side == Side.WILL:
+                self.will_power_counter += item.nft.counter
+                chosen_card.append({
+                    "deck_place": item,
+                    "total_counter": self.will_power_counter,
+                    "magnet_status": self.magnet_is_on})
+            elif item.nft.side == Side.TALENT:
+                self.talent_counter += item.nft.counter
+                chosen_card.append({
+                    "deck_place": item,
+                    "total_counter": self.talent_counter,
+                    "magnet_status": self.magnet_is_on})
+            if self.check_winner(item):
                 winner_place = [candidate]
                 if self.magnet_is_on:
                     winner_place, magnet_stole = self.check_magnets_win(self.collection_data, candidate)
                 printer += "Winners decided" + "\n"
                 break
-            if item.get('is_double'):
-                self.counter += item['counter']
-                if self.check_winner(self.collection_data['collection'][candidate]):
+            if item.nft.speciality == CounterType.DOUBLE_COUNTER:
+                if item.nft.side == Side.WILL:
+                    self.will_power_counter += item.nft.counter
+                    chosen_card[-1]["total_counter"] = self.will_power_counter
+                elif item.nft.side == Side.TALENT:
+                    self.talent_counter += item.nft.counter
+                    chosen_card[-1]["total_counter"] = self.talent_counter
+
+                if self.check_winner(item):
                     winner_place = [candidate]
                     if self.magnet_is_on:
                         winner_place, magnet_stole = self.check_magnets_win(self.collection_data, candidate)
                     printer += "Winners decided" + "\n"
                     break
-            if item.get('is_magnet'):
+            if item.nft.speciality == CounterType.MAGNET:
                 self.magnet_is_on = True
                 self.magnet_counter = Config.MAGNET_EFFECTIVE_ROUNDS
 
             # Go to next
-            candidate = (candidate * item['mul']) + item['sum']
+            candidate = (candidate * item.nft.multiply_num) + item.nft.sum_num
             if candidate > self.all_cards_number-1:
                 candidate = (candidate % self.all_cards_number)
             round += 1
         if len(winner_place) == 0:
             # Go to 51
             printer += f"round {round} decides the winner\n"
-            candidate = (candidate * item['mul']) + item['sum']
-            if candidate > self.all_cards_number-1:
-                candidate = (candidate % self.all_cards_number)
+            candidate = (candidate * item.nft.multiply_num) + item.nft.sum_num
+            if candidate > self.all_cards_number:
+                candidate = (candidate % self.all_cards_number) + 1
             winner_place = [candidate]
+            item = self.collection_data.get(deck_place=candidate)
+            chosen_card.append({
+                "deck_place": item,
+                "total_counter": 0,
+                "magnet_status": self.magnet_is_on})
             if self.magnet_is_on:
                 winner_place, magnet_stole = self.check_magnets_win(self.collection_data, candidate)
+                item = self.collection_data.get(deck_place=candidate)
+                chosen_card.append({
+                    "deck_place": item,
+                    "total_counter": 0,
+                    "magnet_status": self.magnet_is_on})
         winners_nft = []
-        for w in winner_place:
-            winners_nft.append(self.collection_data['collection'][w])
-        printer += "winners places: " + str(winner_place) + ", winner nfts: " + str(winners_nft) + ", round: " + str(round) + ", was magnet on: " + str(self.magnet_is_on) + "magnet stole" + str(magnet_stole) + "\n"
-        printer += "**********************************************\n"
-        if Config.STORE_GAME_PROCESS:
-            with open('winners.txt', 'a') as f:
-                f.write(printer)
-        return winner_place, winners_nft, round, self.magnet_is_on, magnet_stole
+        winners = self.collection_data.filter(deck_place__in=winner_place)
+        # for w in winner_place:
+        #     winners_nft.append(self.collection_data['collection'][w])
+        # printer += "winners places: " + str(winner_place) + ", winner nfts: " + str(winners_nft) + ", round: " + str(round) + ", was magnet on: " + str(self.magnet_is_on) + "magnet stole" + str(magnet_stole) + "\n"
+        # printer += "**********************************************\n"
+        # if Config.STORE_GAME_PROCESS:
+        #     with open('winners.txt', 'a') as f:
+        #         f.write(printer)
+        return winners, chosen_card
+        # return winner_place, winners_nft, round, self.magnet_is_on, magnet_stole
 

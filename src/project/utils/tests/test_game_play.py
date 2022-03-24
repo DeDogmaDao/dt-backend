@@ -1,3 +1,4 @@
+import json
 from random import choice
 from django.test import TestCase
 from project.round.models import Round
@@ -6,6 +7,8 @@ from project.utils.collectigame_algorithm.src.matrix_utils.generate_random_nfts 
 from project.utils.collectigame_algorithm.src.matrix_utils.shuffle import Suffle
 from project.utils.collectigame_algorithm.src.matrix_utils.play_lottery import PlayLottery
 from project.nft.enums import BloodType, Rarity, CounterType, Side
+
+from project.nft.api.serializers import FullDeckSerializer
 
 
 class GameTestCase(TestCase):
@@ -51,15 +54,29 @@ class GameTestCase(TestCase):
         shuffled_obj = shuffle_obj.randomize(eth_block)
         deck = []
         starter, sorted_dict = shuffled_obj
+        print(starter)
         for i,(k,v) in enumerate(sorted_dict.items()):
             deck.append(FullDeck(
-                nft_id=i+1,
+                nft_id=v,
                 round=self.round,
-                deck_place=v,
-                wallet="0xwallet" + str(i+1)
+                deck_place=i+1,
+                wallet="0xwallet" + str(i+1),
+                is_starter=True if v == starter else False
             ))
         FullDeck.objects.bulk_create(deck)
+        self.starter = FullDeck.objects.get(is_starter=True, round=self.round)
+        self.starter_deck_place = self.starter.deck_place
+        print(self.starter)
 
-    def test_animals_can_speak(self):
-        print("HELL finally?")
+    def test_can_play_game(self):
+        # full_deck = json.dumps(FullDeckSerializer(FullDeck.objects.filter(round=self.round), many=True).data)
+        # json_data = json.loads(full_deck)
+        # for item in json_data:
+        #     print("GG ", item)
+        full_deck = FullDeck.objects.filter(round=self.round).select_related("nft")
+        lottery = PlayLottery(full_deck, self.starter_deck_place)
+        winners, chosen_cards = lottery.play()
+        ChosenCardList = [ChosenCard(**card) for card in chosen_cards]
+        ChosenCard.objects.bulk_create(ChosenCardList)
+        print("winner:", winners, "chosen cards:", chosen_cards)
         self.assertEqual(1, 1)

@@ -25,6 +25,10 @@ class FullDeck(BaseModel):
         verbose_name=_("Deck place"),
         max_length=1024
     )
+    is_starter = models.BooleanField(
+        verbose_name=_("Is starter"),
+        default=False
+    )
     #
     # class Meta:
     #     app_label = "full_deck"
