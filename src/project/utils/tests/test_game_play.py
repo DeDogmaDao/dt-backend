@@ -167,3 +167,9 @@ class GameTestCase(TestCase):
         lottery = PlayLottery(full_deck, self.starter_deck_place)
         winners, chosen_cards = lottery.play()
         self.assertEqual(winners[0].deck_place, prev_to_last_id)
+
+    def test_51th_is_winner(self):
+        pass
+
+    def test_god_is_winner(self):
+        pass
