@@ -76,3 +76,48 @@ class GameTestCase(TestCase):
 
     def test_can_play_game(self):
         self.assertGreater(len(self.winners), 0)
+
+    def test_check_algorithm(self):
+        full_deck = FullDeck.objects.filter(round=self.round).select_related("nft")
+        first_chosen_card = ChosenCard.objects.filter(round=self.round).order_by("id").first()
+        print("deck place",first_chosen_card.deck_place.deck_place)
+        self.assertEqual(first_chosen_card.deck_place.deck_place, self.starter_deck_place)
+        print("first counter", first_chosen_card.total_counter)
+        print(ChosenCard.objects.all().count())
+        while True:
+            try:
+                next_nft_place = ((first_chosen_card.deck_place.nft.multiply_num *
+                                   first_chosen_card.deck_place.deck_place) +
+                                  first_chosen_card.deck_place.nft.sum_num)
+                if next_nft_place > full_deck.count():
+                    next_nft_place = next_nft_place % full_deck.count()
+                first_chosen_card = first_chosen_card.get_next_by_created_at()
+                print("next place: ", next_nft_place,
+                      "chosen_card: ", first_chosen_card.deck_place.deck_place,
+                      "ability: ", first_chosen_card.deck_place.nft.speciality,
+                      "total_counter", first_chosen_card.total_counter)
+                if not first_chosen_card.magnet_stole:
+                    self.assertEqual(next_nft_place , first_chosen_card.deck_place.deck_place)
+                else:
+                    print("Magnet stole the chance")
+                    prev = full_deck.count() if first_chosen_card.deck_place.deck_place == 1 else \
+                        first_chosen_card.deck_place.deck_place - 1
+                    next = 1 if first_chosen_card.deck_place.deck_place == full_deck.count() else \
+                        first_chosen_card.deck_place.deck_place + 1
+                    next_place = FullDeck.objects.get(deck_place=next).deck_place
+                    prev_place = FullDeck.objects.get(deck_place=prev).deck_place
+                    print("places: ", [
+                          first_chosen_card.deck_place.deck_place,
+                          next_place,
+                          prev_place
+                    ], "chosen card: ", first_chosen_card.deck_place.deck_place)
+
+                    self.assertIn(first_chosen_card.deck_place.deck_place,
+                                  [
+                                      first_chosen_card.deck_place.deck_place,
+                                      next_place,
+                                      prev_place
+                                  ])
+            except ChosenCard.DoesNotExist:
+                print("End of chosen cards")
+                break
