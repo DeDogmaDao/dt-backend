@@ -121,3 +121,27 @@ class GameTestCase(TestCase):
             except ChosenCard.DoesNotExist:
                 print("End of chosen cards")
                 break
+
+
+    def test_next_is_thief(self):
+        last = ChosenCard.objects.filter(round=self.round).order_by("id").last()
+        last.speciality=CounterType.NOTHING
+        last.save()
+        before_last =  ChosenCard.objects.get(id = last.id - 1)
+        next_to_last_id = 1 if last.deck_place.deck_place == NFT.objects.count() else last.deck_place.deck_place + 1
+        prev_to_last_id = NFT.objects.count() if last.deck_place.deck_place == 1 else last.deck_place.deck_place - 1
+
+        # turns magnet on
+        NFT.objects.filter(id=FullDeck.objects.get(deck_place=before_last.deck_place.deck_place).nft.id).update(
+            speciality=CounterType.MAGNET)
+
+        NFT.objects.filter(id=FullDeck.objects.get(deck_place=next_to_last_id).nft.id).update(
+            speciality=CounterType.MAGNET)
+        NFT.objects.filter(id=FullDeck.objects.get(deck_place=prev_to_last_id).nft.id).update(
+            speciality=CounterType.NOTHING)
+
+
+        full_deck = FullDeck.objects.filter(round=self.round).select_related("nft")
+        lottery = PlayLottery(full_deck, self.starter_deck_place)
+        winners, chosen_cards = lottery.play()
+        self.assertEqual(winners[0].deck_place, next_to_last_id)
