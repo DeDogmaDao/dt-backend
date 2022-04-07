@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  backend:
+    build:
+      context: .
+    command: tail -f /dev/null
+    env_file: test.env
+  
+  redis:
+    image: redis:6.2.2-alpine
+
+  postgres:
+    image: postgres:14.1
+    env_file: test.env
+
+volumes:
+  database:
