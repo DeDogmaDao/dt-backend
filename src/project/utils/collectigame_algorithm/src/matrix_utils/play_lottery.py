@@ -23,7 +23,7 @@ class PlayLottery:
         if candidate == 0:
             if collection.get(deck_place=self.all_cards_number).speciality == CounterType.MAGNET:
                 magnet_winners.append(self.all_cards_number)
-            if collection.get(deck_place=2).nft.speciality == CounterType.MAGNET:
+            if collection.get(deck_place=collection.first()+1).nft.speciality == CounterType.MAGNET:
                 magnet_winners.append(2)
 
             if len(magnet_winners) > 0:
@@ -32,7 +32,7 @@ class PlayLottery:
         elif candidate == self.all_cards_number:
             if collection.get(deck_place=self.all_cards_number-1).nft.speciality == CounterType.MAGNET:
                 magnet_winners.append(self.all_cards_number-1)
-            if collection.get(deck_place=1).nft.speciality == CounterType.MAGNET:
+            if collection.first().nft.speciality == CounterType.MAGNET:
                 magnet_winners.append(1)
         
             if len(magnet_winners) > 0:

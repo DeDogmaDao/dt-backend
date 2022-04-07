@@ -55,9 +55,12 @@ class GameTestCase(TestCase):
         deck = []
         starter, sorted_dict = shuffled_obj
         # print(starter)
+        all_nfts = NFT.objects.all().values_list('id', flat=True)
+
         for i,(k,v) in enumerate(sorted_dict.items()):
             deck.append(FullDeck(
-                nft_id=i+1,
+                # nft_id=i+1,
+                nft_id=all_nfts[i],
                 round=self.round,
                 deck_place=v,
                 wallet="0xwallet" + str(i+1),
