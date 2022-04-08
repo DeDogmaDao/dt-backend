@@ -16,5 +16,4 @@ ADD . $APP_HOME/
 WORKDIR $APP_HOME
 RUN pip3 install -U pip
 RUN pip3 install pipenv
-RUN pipenv install
-RUN pipenv shell
+RUN pipenv install --system
