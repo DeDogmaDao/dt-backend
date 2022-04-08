@@ -4,8 +4,10 @@ services:
   backend:
     build:
       context: .
-    command: tail -f /dev/null
+    command: sh script/run.sh
     env_file: test.env
+    volumes:
+      - media-files:/app/project/media
   
   redis:
     image: redis:6.2.2-alpine
@@ -13,6 +15,9 @@ services:
   postgres:
     image: postgres:14.1
     env_file: test.env
+    volumes:
+      - database:/var/lib/postgresql/data
 
 volumes:
   database:
+  media-files:
