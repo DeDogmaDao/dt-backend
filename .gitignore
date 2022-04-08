@@ -8,3 +8,5 @@ env
 *.db
 .DS_store
 nft_data
+media
+static
