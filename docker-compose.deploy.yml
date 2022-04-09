@@ -17,7 +17,7 @@ services:
       - POSTGRES_DB
       - DBPOOL_HOST
       - DBPOOL_PORT
-    command: sh script/run.sh
+    command: sh /app/project/script/run.sh
     env_file: test.env
     volumes:
       - mediafiles:/app/project/media
