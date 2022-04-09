@@ -10,6 +10,7 @@ pillow = "*"
 gunicorn = "*"
 djangorestframework = "*"
 psycopg2-binary = "==2.9.3"
+gevent = "*"
 
 [dev-packages]
 
