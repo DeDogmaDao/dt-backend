@@ -14,7 +14,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 
-from project.utils.helper import get_bool_from_env, get_list
+from project.utils.helper import get_bool_from_env, get_list, get_port_with_default
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -85,11 +85,11 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'HOST': os.environ.get("POSTGRES_HOST"),
+        'HOST': os.environ.get("DBPOOL_HOST") or os.environ.get("POSTGRES_HOST"),
         'NAME': os.environ.get("POSTGRES_DB"),
         'USER': os.environ.get("POSTGRES_USER"),
         'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
-        'PORT': int(os.environ.get("POSTGRES_PORT"))
+        'PORT': get_port_with_default(os.environ.get("DBPOOL_PORT"), 0) or int(os.environ.get("POSTGRES_PORT"))
     }
 }
 
