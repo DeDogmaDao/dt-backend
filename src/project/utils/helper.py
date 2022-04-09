@@ -16,3 +16,10 @@ def get_bool_from_env(name, default_value):
         except ValueError as e:
             raise ValueError("{} is an invalid value for {}".format(value, name)) from e
     return default_value
+
+def get_port_with_default(env, default):
+    try:
+        val = int(env)
+    except ValueError:
+        val = default
+    return val
