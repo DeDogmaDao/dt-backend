@@ -20,6 +20,6 @@ def get_bool_from_env(name, default_value):
 def get_port_with_default(env, default):
     try:
         val = int(env)
-    except ValueError:
+    except TypeError:
         val = default
     return val
