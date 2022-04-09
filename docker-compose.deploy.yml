@@ -2,22 +2,27 @@ version: "3"
 
 services:
   backend:
+    restart: always
     build:
       context: .
+    environment:
+      - DEBUG
+      - SECRET_KEY
+      - ALLOWED_HOSTS
+      - CORS_ORIGIN_ALLOW_ALL
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
     command: sh script/run.sh
     env_file: test.env
     volumes:
       - media-files:/app/project/media
   
   redis:
+    restart: always
     image: redis:6.2.2-alpine
 
-  postgres:
-    image: postgres:14.1
-    env_file: test.env
-    volumes:
-      - database:/var/lib/postgresql/data
-
 volumes:
-  database:
   media-files:
