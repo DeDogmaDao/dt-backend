@@ -10,6 +10,7 @@ services:
       - SECRET_KEY
       - ALLOWED_HOSTS
       - CORS_ORIGIN_ALLOW_ALL
+      - CORS_ORIGIN_WHITELIST
       - POSTGRES_HOST
       - POSTGRES_PORT
       - POSTGRES_USER
