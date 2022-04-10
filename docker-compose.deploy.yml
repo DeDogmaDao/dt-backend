@@ -3,8 +3,7 @@ version: "3.4"
 services:
   backend:
     restart: always
-    build:
-      context: .
+    image: "${BACKEND_IMAGE}"
     environment:
       - DEBUG
       - SECRET_KEY
