@@ -48,7 +48,7 @@ jobs:
             export DBPOOL_HOST=${{ secrets.DBPOOL_HOST }}
             export DBPOOL_PORT=${{ secrets.DBPOOL_PORT }}
             curl -H "Authorization: token ${{ secrets.PERSONAL_GITHUB_TOKEN }}" https://raw.githubusercontent.com/DeDogmaDao/dt-backend/master/docker-compose.deploy.production.yml > docker-compose.deploy.yml
-            docker login ghcr.io -u dedogmadao -p $GITHUB_TOKEN
+            echo ${{ secrets.PERSONAL_GITHUB_TOKEN }} | docker login ghcr.io -u flokibb --password-stdin
             docker network create ddd_network || true
             docker volume create --name=mediafiles || true
             docker-compose -f docker-compose.deploy.yml down
