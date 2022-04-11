@@ -18,7 +18,6 @@ services:
       - DBPOOL_HOST
       - DBPOOL_PORT
     command: sh /app/project/scripts/run.sh
-    env_file: test.env
     volumes:
       - mediafiles:/app/project/media
   
