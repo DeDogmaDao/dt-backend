@@ -21,7 +21,7 @@ jobs:
         run: docker build -t ghcr.io/dedogmadao/dt-backend/backend_staging:latest .
         
       - name: login to docker registry
-        run: docker login ghcr.io -u dedogmadao -p $GITHUB_TOKEN
+        run: echo ${{ secrets.PERSONAL_GITHUB_TOKEN }} | docker login ghcr.io -u flokibb --password-stdin
       - name: push docker image to package registry
         run: docker push ghcr.io/dedogmadao/dt-backend/backend_staging:latest
 
