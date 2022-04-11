@@ -3,7 +3,7 @@ version: "3.4"
 services:
   backend:
     restart: always
-    image: "${BACKEND_IMAGE}"
+    image: "ghcr.io/dedogmadao/dt-backend/backend_production:latest"
     environment:
       - DEBUG
       - SECRET_KEY

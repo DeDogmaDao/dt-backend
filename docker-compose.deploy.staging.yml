@@ -1,0 +1,37 @@
+version: "3.4"
+
+services:
+  backend:
+    restart: always
+    image: "ghcr.io/dedogmadao/dt-backend/backend_staging:latest"
+    environment:
+      - DEBUG
+      - SECRET_KEY
+      - ALLOWED_HOSTS
+      - CORS_ORIGIN_ALLOW_ALL
+      - CORS_ORIGIN_WHITELIST
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - DBPOOL_HOST
+      - DBPOOL_PORT
+    command: sh /app/project/scripts/run.sh
+    env_file: test.env
+    volumes:
+      - mediafiles:/app/project/media
+  
+  redis:
+    restart: always
+    image: redis:6.2.2-alpine
+
+volumes:
+  mediafiles:
+    name: mediafiles
+    external: true
+
+networks:
+  default:
+    external:
+      name: ddd_network

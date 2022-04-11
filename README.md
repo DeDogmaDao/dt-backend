@@ -31,4 +31,4 @@
 ### download single file from github by personal token
 `curl -H "Authorization: token $PERSONAL_GITHUB_TOKEN" https://raw.githubusercontent.com/DeDogmaDao/dt-backend/master/docker-compose.deploy.yml > docker-compose.deploy.yml`
 
-NOTE: if this works by github token(ci token), its better to use it. rather than persoanl token!
+NOTE: if this works by github token(ci token), its better to use it. rather than personal token!
