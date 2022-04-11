@@ -15,14 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: pull latest code
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
 
       - name: build docker image
         run: docker build -t ghcr.io/dedogmadao/dt-backend/backend_production:latest .
         
+      - name: login to docker registry
+        run: docker login ghcr.io -u dedogmadao -p $GITHUB_TOKEN
       - name: push docker image to package registry
-      - run: docker login ghcr.io -u dedogmadao -p $GITHUB_TOKEN
-      - run: docker push ghcr.io/dedogmadao/dt-backend/backend_production:latest
+        run: docker push ghcr.io/dedogmadao/dt-backend/backend_production:latest
 
 
   deploy:
