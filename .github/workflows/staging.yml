@@ -22,6 +22,7 @@ jobs:
           docker build -t ghcr.io/dedogmadao/dt-backend/backend_staging:latest .
         
       - name: push docker image to package registry
+      - run: |
           docker login ghcr.io -u dedogmadao -p $GITHUB_TOKEN
           docker push ghcr.io/dedogmadao/dt-backend/backend_staging:latest
 
