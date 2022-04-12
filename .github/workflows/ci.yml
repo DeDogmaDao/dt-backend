@@ -46,9 +46,9 @@ jobs:
       REPOSITORY_NAME: dt-backend
     secrets:
       REF_NAME: ${{ secrets[format('{0}DOMAIN', needs.environ_step.outputs.prefix)] }}
-      SSH_ACTION_HOST: ${{ secrets['FRONTEND_STAGING_DEPLOY_HOST'] }}
-      SSH_ACTION_USER: ${{ secrets['FRONTEND_STAGING_DEPLOY_USER'] }}
-      SSH_ACTION_KEY: ${{ secrets['STAGING_GITHUB_SSH_KEY'] }}
+      SSH_ACTION_HOST: ${{ secrets[format('{0}SSH_ACTION_HOST', needs.environ_step.outputs.prefix)] }}
+      SSH_ACTION_USER: ${{ secrets[format('{0}SSH_ACTION_USER', needs.environ_step.outputs.prefix)] }}
+      SSH_ACTION_KEY: ${{ secrets[format('{0}SSH_ACTION_KEY', needs.environ_step.outputs.prefix)] }}
       DOMAIN: ${{ secrets[format('{0}DOMAIN', needs.environ_step.outputs.prefix)] }}
       BRANCH: ${{ github.ref_name }}
       PERSONAL_GITHUB_TOKEN: ${{ secrets['PERSONAL_GITHUB_TOKEN'] }}
