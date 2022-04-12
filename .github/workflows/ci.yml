@@ -1,0 +1,67 @@
+name: Build and deploy
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'info'
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: pull latest code
+        uses: actions/checkout@v2
+
+      - name: build step
+        run: docker build -t ghcr.io/dedogmadao/dt-backend/dt-backend:${{ github.ref_name }}-latest .
+
+      - name: login to docker registry
+        run: echo ${{ secrets.PERSONAL_GITHUB_TOKEN }} | docker login ghcr.io -u flokibb --password-stdin
+
+      - name: push docker image to package registry
+        run: docker push ghcr.io/dedogmadao/dt-backend/dt-backend:${{ github.ref_name }}-latest
+
+  environ_step:
+    needs: build_and_push
+    runs-on: ubuntu-latest
+    outputs:
+      prefix: ${{ steps.env_step.outputs.env_prefix }}
+    steps:
+      - name: Check out current repository and set ENV
+        id: env_step
+        run: if [ "${{ github.ref }}" == 'refs/heads/develop' ]; then echo "::set-output name=env_prefix::STAGE_"; else echo "::set-output name=env_prefix::PROD_"; fi
+          
+
+  deploy:
+    needs: environ_step
+    uses: dedogmadao/dd-reusable-actions/.github/workflows/action.yml@master
+    with:
+      REPOSITORY_NAME: dt-backend
+    secrets:
+      REF_NAME: ${{ secrets[format('{0}DOMAIN', needs.environ_step.outputs.prefix)] }}
+      SSH_ACTION_HOST: ${{ secrets['FRONTEND_STAGING_DEPLOY_HOST'] }}
+      SSH_ACTION_USER: ${{ secrets['FRONTEND_STAGING_DEPLOY_USER'] }}
+      SSH_ACTION_KEY: ${{ secrets['STAGING_GITHUB_SSH_KEY'] }}
+      DOMAIN: ${{ secrets[format('{0}DOMAIN', needs.environ_step.outputs.prefix)] }}
+      BRANCH: ${{ github.ref_name }}
+      PERSONAL_GITHUB_TOKEN: ${{ secrets['PERSONAL_GITHUB_TOKEN'] }}
+      DEBUG: ${{ secrets[format('{0}DEBUG', needs.environ_step.outputs.prefix)] }}
+      SECRET_KEY: ${{ secrets[format('{0}SECRET_KEY', needs.environ_step.outputs.prefix)] }}
+      ALLOWED_HOSTS: ${{ secrets[format('{0}ALLOWED_HOSTS', needs.environ_step.outputs.prefix)] }}
+      CORS_ORIGIN_ALLOW_ALL: ${{ secrets[format('{0}CORS_ORIGIN_ALLOW_ALL', needs.environ_step.outputs.prefix)] }}
+      CORS_ORIGIN_WHITELIST: ${{ secrets[format('{0}CORS_ORIGIN_WHITELIST', needs.environ_step.outputs.prefix)] }}
+      POSTGRES_HOST: ${{ secrets[format('{0}POSTGRES_HOST', needs.environ_step.outputs.prefix)] }}
+      POSTGRES_PORT: ${{ secrets[format('{0}POSTGRES_PORT', needs.environ_step.outputs.prefix)] }}
+      POSTGRES_USER: ${{ secrets[format('{0}POSTGRES_USER', needs.environ_step.outputs.prefix)] }}
+      POSTGRES_PASSWORD: ${{ secrets[format('{0}POSTGRES_PASSWORD', needs.environ_step.outputs.prefix)] }}
+      POSTGRES_DB: ${{ secrets[format('{0}POSTGRES_DB', needs.environ_step.outputs.prefix)] }}
+      DBPOOL_HOST: ${{ secrets[format('{0}DBPOOL_HOST', needs.environ_step.outputs.prefix)] }}
+      DBPOOL_PORT: ${{ secrets[format('{0}DBPOOL_PORT', needs.environ_step.outputs.prefix)] }}
+
