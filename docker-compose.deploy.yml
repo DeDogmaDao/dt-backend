@@ -19,8 +19,8 @@ services:
       - DBPOOL_PORT
     command: sh /app/project/scripts/run.sh
     volumes:
-      - mediafiles:/app/project/media
       - staticfiles:/app/project/static
+      - mediafiles:/app/project/media
   
   redis:
     restart: always
