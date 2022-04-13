@@ -19,6 +19,7 @@ services:
       - DBPOOL_PORT
     command: sh /app/project/scripts/run.sh
     volumes:
+      - staticfiles:/app/project/static
       - mediafiles:/app/project/media
   
   redis:
@@ -28,6 +29,9 @@ services:
 volumes:
   mediafiles:
     name: mediafiles
+    external: true
+  staticfiles:
+    name: staticfiles
     external: true
 
 networks:
