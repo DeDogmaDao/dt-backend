@@ -20,6 +20,7 @@ services:
     command: sh /app/project/scripts/run.sh
     volumes:
       - mediafiles:/app/project/media
+      - staticfiles:/app/project/static
   
   redis:
     restart: always
@@ -28,6 +29,9 @@ services:
 volumes:
   mediafiles:
     name: mediafiles
+    external: true
+  staticfiles:
+    name: staticfiles
     external: true
 
 networks:
