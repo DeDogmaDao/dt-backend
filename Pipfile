@@ -11,6 +11,8 @@ gunicorn = "*"
 djangorestframework = "*"
 psycopg2-binary = "==2.9.3"
 gevent = "*"
+celery = "==5.1.2"
+redis = "*"
 
 [dev-packages]
 
