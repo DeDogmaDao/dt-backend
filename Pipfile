@@ -13,6 +13,8 @@ psycopg2-binary = "==2.9.3"
 gevent = "*"
 celery = "==5.1.2"
 redis = "*"
+tqdm = "==4.64.0"
+web3 = "==5.29.0"
 
 [dev-packages]
 
