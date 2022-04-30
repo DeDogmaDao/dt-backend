@@ -126,6 +126,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+INITIAL_ETHEREUM_BLOCK_NUMBER = 14685733 # (Apr-30-2022 01:00:53 PM +UTC)
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
