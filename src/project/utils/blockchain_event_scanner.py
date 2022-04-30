@@ -1,6 +1,7 @@
 import datetime
 import time
 import logging
+from ens import ENS
 from abc import ABC, abstractmethod
 from typing import Tuple, Optional, Callable, List, Iterable
 
@@ -15,6 +16,7 @@ from web3._utils.events import get_event_data
 # from project.settings import INITIAL_ETHEREUM_BLOCK_NUMBER
 
 INITIAL_ETHEREUM_BLOCK_NUMBER = 14685000
+# INITIAL_ETHEREUM_BLOCK_NUMBER_TEMP = 13975838
 
 
 logger = logging.getLogger(__name__)
@@ -391,10 +393,11 @@ if __name__ == "__main__":
           {"inputs": [], "name": "withdrawMoney", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]
 
     class JSONifiedState(EventScannerState):
-        def __init__(self):
+        def __init__(self, ens):
             self.state = None
             self.fname = "test-state.json"
             self.last_save = 0
+            self.ens = ens
 
         def reset(self):
             self.state = {
@@ -437,7 +440,9 @@ if __name__ == "__main__":
             args = event["args"]
             transfer = {
                 "from": args["from"],
+                "from_ens": self.ens.name(args["from"]),
                 "to": args.to,
+                "to_ens": self.ens.name(args.to),
                 "token_id": args.tokenId,
                 "timestamp": block_when.isoformat(),
             }
@@ -462,10 +467,11 @@ if __name__ == "__main__":
 
         provider = HTTPProvider(api_url)
         provider.middlewares.clear()
+        ns = ENS(provider)
 
         web3 = Web3(provider)
         ERC721 = web3.eth.contract(abi=ABI)
-        state = JSONifiedState()
+        state = JSONifiedState(ns)
         state.restore()
         scanner = EventScanner(
             web3=web3,
@@ -496,6 +502,5 @@ if __name__ == "__main__":
         state.save()
         duration = time.time() - start
         print(f"Scanned total {len(result)} Transfer events, in {duration} seconds, total {total_chunks_scanned} chunk scans performed")
-        print(result)
 
     run()
