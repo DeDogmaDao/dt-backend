@@ -10,3 +10,4 @@ env
 nft_data
 media
 static
+test-state.json
