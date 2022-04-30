@@ -15,7 +15,7 @@ from web3._utils.events import get_event_data
 
 # from project.settings import INITIAL_ETHEREUM_BLOCK_NUMBER
 
-INITIAL_ETHEREUM_BLOCK_NUMBER = 14685000
+INITIAL_ETHEREUM_BLOCK_NUMBER = 13975838
 # INITIAL_ETHEREUM_BLOCK_NUMBER_TEMP = 13975838
 
 
@@ -479,7 +479,7 @@ if __name__ == "__main__":
             state=state,
             events=[ERC721.events.Transfer],
             filters={"address": RCC_ADDRESS},
-            max_chunk_scan_size=10000
+            max_chunk_scan_size=5000
         )
         chain_reorg_safety_blocks = 10
         scanner.delete_potentially_forked_block_data(state.get_last_scanned_block() - chain_reorg_safety_blocks)
