@@ -15,8 +15,10 @@ from web3._utils.events import get_event_data
 
 # from project.settings import INITIAL_ETHEREUM_BLOCK_NUMBER
 
-INITIAL_ETHEREUM_BLOCK_NUMBER = 13975838
+INITIAL_ETHEREUM_BLOCK_NUMBER = 14685000
 # INITIAL_ETHEREUM_BLOCK_NUMBER_TEMP = 13975838
+
+# tx_id required
 
 
 logger = logging.getLogger(__name__)
@@ -80,7 +82,7 @@ class EventScanner:
         return 1
 
     def get_suggested_scan_end_block(self):
-        return self.web3.eth.blockNumber - 1
+        return self.web3.eth.blockNumber - 12
 
     def get_last_scanned_block(self) -> int:
         return self.state.get_last_scanned_block()
@@ -170,25 +172,24 @@ class EventScanner:
 
 
 def _retry_web3_call(func, start_block, end_block, retries, delay) -> Tuple[int, list]:
-    return end_block, func(start_block, end_block)
-    # for i in range(retries):
-    #     try:
-    #         return end_block, func(start_block, end_block)
-    #     except Exception as e:
-    #         if i < retries - 1:
-    #             logger.warning(
-    #                 "Retrying events for block range %d - %d (%d) failed with %s, retrying in %s seconds",
-    #                 start_block,
-    #                 end_block,
-    #                 end_block-start_block,
-    #                 e,
-    #                 delay)
-    #             end_block = start_block + ((end_block - start_block) // 2)
-    #             time.sleep(delay)
-    #             continue
-    #         else:
-    #             logger.warning("Out of retries")
-    #             raise
+    for i in range(retries):
+        try:
+            return end_block, func(start_block, end_block)
+        except Exception as e:
+            if i < retries - 1:
+                logger.warning(
+                    "Retrying events for block range %d - %d (%d) failed with %s, retrying in %s seconds",
+                    start_block,
+                    end_block,
+                    end_block-start_block,
+                    e,
+                    delay)
+                end_block = start_block + ((end_block - start_block) // 2)
+                time.sleep(delay)
+                continue
+            else:
+                logger.warning("Out of retries")
+                raise
 
 
 def _fetch_events_for_all_contracts(
@@ -443,6 +444,7 @@ if __name__ == "__main__":
                 "from_ens": self.ens.name(args["from"]),
                 "to": args.to,
                 "to_ens": self.ens.name(args.to),
+                "tx_hash": txhash,
                 "token_id": args.tokenId,
                 "timestamp": block_when.isoformat(),
             }
