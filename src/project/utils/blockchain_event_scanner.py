@@ -458,7 +458,7 @@ if __name__ == "__main__":
             self.state["blocks"][block_number][txhash][log_index] = transfer
             return f"{block_number}-{txhash}-{log_index}"
 
-    def run():
+    def run_fetch(url):
 
         if len(sys.argv) < 2:
             print("Usage: eventscanner.py http://your-node-url")
@@ -505,4 +505,4 @@ if __name__ == "__main__":
         duration = time.time() - start
         print(f"Scanned total {len(result)} Transfer events, in {duration} seconds, total {total_chunks_scanned} chunk scans performed")
 
-    run()
+    run_fetch()
