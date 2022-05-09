@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     "project.nft",
     "project.round",
     "project.whitelist",
-    "project.blockchain_transaction"
+    "project.blockchain_transaction",
+    "project.contract_history"
 ]
 
 MIDDLEWARE = [
