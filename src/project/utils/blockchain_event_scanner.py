@@ -13,6 +13,8 @@ from eth_abi.codec import ABICodec
 from web3._utils.filters import construct_event_filter_params
 from web3._utils.events import get_event_data
 
+from project.contract_history.models import TransferHistory, ScannerState
+
 # from project.settings import INITIAL_ETHEREUM_BLOCK_NUMBER
 
 INITIAL_ETHEREUM_BLOCK_NUMBER = 14685000
@@ -137,16 +139,15 @@ class EventScanner:
         current_chuck_size = min(self.max_scan_chunk_size, current_chuck_size)
         return int(current_chuck_size)
 
-    def scan(self, start_block, end_block, start_chunk_size=20, progress_callback=Optional[Callable]) -> Tuple[
-        list, int]:
-        assert start_block <= end_block
+    def scan(self, start_block, till_block, end_block, start_chunk_size=20): #, progress_callback=Optional[Callable]) -> Tuple[list, int]:
+        assert start_block <= end_block and start_block <= till_block and till_block <= end_block
         current_block = start_block
         chunk_size = start_chunk_size
         last_scan_duration = last_logs_found = 0
         total_chunks_scanned = 0
         all_processed = []
 
-        while current_block <= end_block:
+        while current_block <= till_block:
 
             self.state.start_chunk(current_block, chunk_size)
             estimated_end_block = current_block + chunk_size
@@ -161,8 +162,8 @@ class EventScanner:
             last_scan_duration = time.time() - start
             all_processed += new_entries
 
-            if progress_callback:
-                progress_callback(start_block, end_block, current_block, end_block_timestamp, chunk_size, len(new_entries))
+            # if progress_callback:
+            #     progress_callback(start_block, end_block, current_block, end_block_timestamp, chunk_size, len(new_entries))
             chunk_size = self.estimate_next_chunk_size(chunk_size, len(new_entries))
             current_block = current_end + 1
             total_chunks_scanned += 1
@@ -220,289 +221,321 @@ def _fetch_events_for_all_contracts(
     return all_events
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     import sys
-    import json
-    from web3.providers.rpc import HTTPProvider
-    from tqdm import tqdm
-    RCC_ADDRESS = "0xED5AF388653567Af2F388E6224dC7C4b3241C544"
-    ABI = [
-    {"inputs": [{"internalType": "uint256", "name": "maxBatchSize_", "type": "uint256"},
-                      {"internalType": "uint256", "name": "collectionSize_", "type": "uint256"},
-                      {"internalType": "uint256", "name": "amountForAuctionAndDev_", "type": "uint256"},
-                      {"internalType": "uint256", "name": "amountForDevs_", "type": "uint256"}],
-    "stateMutability": "nonpayable","type": "constructor"},
-    {"anonymous": False, "inputs": [
-                        {"indexed": True, "internalType": "address", "name": "owner", "type": "address"},
-                        {"indexed": True, "internalType": "address", "name": "approved", "type": "address"},
-                        {"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}],
-     "name": "Approval", "type": "event"}, {"anonymous": False, "inputs": [
-    {"indexed": True, "internalType": "address", "name": "owner", "type": "address"},
-    {"indexed": True, "internalType": "address", "name": "operator", "type": "address"},
-    {"indexed": False, "internalType": "bool", "name": "approved", "type": "bool"}], "name": "ApprovalForAll",
-                                                                                        "type": "event"},
-          {"anonymous": False,
-           "inputs": [{"indexed": True, "internalType": "address", "name": "previousOwner", "type": "address"},
-                      {"indexed": True, "internalType": "address", "name": "newOwner", "type": "address"}],
-           "name": "OwnershipTransferred", "type": "event"}, {"anonymous": False, "inputs": [
-        {"indexed": True, "internalType": "address", "name": "from", "type": "address"},
-        {"indexed": True, "internalType": "address", "name": "to", "type": "address"},
-        {"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "Transfer",
-                                                              "type": "event"},
-          {"inputs": [], "name": "AUCTION_DROP_INTERVAL",
-           "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
-           "type": "function"}, {"inputs": [], "name": "AUCTION_DROP_PER_STEP",
-                                 "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                                 "stateMutability": "view", "type": "function"},
-          {"inputs": [], "name": "AUCTION_END_PRICE",
-           "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
-           "type": "function"}, {"inputs": [], "name": "AUCTION_PRICE_CURVE_LENGTH",
-                                 "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                                 "stateMutability": "view", "type": "function"},
-          {"inputs": [], "name": "AUCTION_START_PRICE",
-           "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
-           "type": "function"},
-          {"inputs": [{"internalType": "address", "name": "", "type": "address"}], "name": "allowlist",
-           "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
-           "type": "function"},
-          {"inputs": [], "name": "allowlistMint", "outputs": [], "stateMutability": "payable", "type": "function"},
-          {"inputs": [], "name": "amountForAuctionAndDev",
-           "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
-           "type": "function"}, {"inputs": [], "name": "amountForDevs",
-                                 "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                                 "stateMutability": "view", "type": "function"}, {
-              "inputs": [{"internalType": "address", "name": "to", "type": "address"},
-                         {"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "approve",
-              "outputs": [], "stateMutability": "nonpayable", "type": "function"},
-          {"inputs": [{"internalType": "uint256", "name": "quantity", "type": "uint256"}], "name": "auctionMint",
-           "outputs": [], "stateMutability": "payable", "type": "function"},
-          {"inputs": [{"internalType": "address", "name": "owner", "type": "address"}], "name": "balanceOf",
-           "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
-           "type": "function"},
-          {"inputs": [{"internalType": "uint256", "name": "quantity", "type": "uint256"}], "name": "devMint",
-           "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {
-              "inputs": [{"internalType": "uint64", "name": "mintlistPriceWei", "type": "uint64"},
-                         {"internalType": "uint64", "name": "publicPriceWei", "type": "uint64"},
-                         {"internalType": "uint32", "name": "publicSaleStartTime", "type": "uint32"}],
-              "name": "endAuctionAndSetupNonAuctionSaleInfo", "outputs": [], "stateMutability": "nonpayable",
-              "type": "function"},
-          {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "getApproved",
-           "outputs": [{"internalType": "address", "name": "", "type": "address"}], "stateMutability": "view",
-           "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "_saleStartTime", "type": "uint256"}],
-                                 "name": "getAuctionPrice",
-                                 "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                                 "stateMutability": "view", "type": "function"},
-          {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "getOwnershipData",
-           "outputs": [{"components": [{"internalType": "address", "name": "addr", "type": "address"},
-                                       {"internalType": "uint64", "name": "startTimestamp", "type": "uint64"}],
-                        "internalType": "struct ERC721A.TokenOwnership", "name": "", "type": "tuple"}],
-           "stateMutability": "view", "type": "function"}, {
-              "inputs": [{"internalType": "address", "name": "owner", "type": "address"},
-                         {"internalType": "address", "name": "operator", "type": "address"}],
-              "name": "isApprovedForAll", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-              "stateMutability": "view", "type": "function"}, {
-              "inputs": [{"internalType": "uint256", "name": "publicPriceWei", "type": "uint256"},
-                         {"internalType": "uint256", "name": "publicSaleKey", "type": "uint256"},
-                         {"internalType": "uint256", "name": "publicSaleStartTime", "type": "uint256"}],
-              "name": "isPublicSaleOn", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-              "stateMutability": "view", "type": "function"}, {"inputs": [], "name": "maxPerAddressDuringMint",
-                                                               "outputs": [{"internalType": "uint256", "name": "",
-                                                                            "type": "uint256"}],
-                                                               "stateMutability": "view", "type": "function"},
-          {"inputs": [], "name": "name", "outputs": [{"internalType": "string", "name": "", "type": "string"}],
-           "stateMutability": "view", "type": "function"}, {"inputs": [], "name": "nextOwnerToExplicitlySet",
-                                                            "outputs": [{"internalType": "uint256", "name": "",
-                                                                         "type": "uint256"}], "stateMutability": "view",
-                                                            "type": "function"},
-          {"inputs": [{"internalType": "address", "name": "owner", "type": "address"}], "name": "numberMinted",
-           "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
-           "type": "function"},
-          {"inputs": [], "name": "owner", "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-           "stateMutability": "view", "type": "function"},
-          {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "ownerOf",
-           "outputs": [{"internalType": "address", "name": "", "type": "address"}], "stateMutability": "view",
-           "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "quantity", "type": "uint256"},
-                                            {"internalType": "uint256", "name": "callerPublicSaleKey",
-                                             "type": "uint256"}], "name": "publicSaleMint", "outputs": [],
-                                 "stateMutability": "payable", "type": "function"},
-          {"inputs": [], "name": "renounceOwnership", "outputs": [], "stateMutability": "nonpayable",
-           "type": "function"}, {"inputs": [{"internalType": "address", "name": "from", "type": "address"},
-                                            {"internalType": "address", "name": "to", "type": "address"},
-                                            {"internalType": "uint256", "name": "tokenId", "type": "uint256"}],
-                                 "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable",
-                                 "type": "function"}, {
-              "inputs": [{"internalType": "address", "name": "from", "type": "address"},
-                         {"internalType": "address", "name": "to", "type": "address"},
-                         {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
-                         {"internalType": "bytes", "name": "_data", "type": "bytes"}], "name": "safeTransferFrom",
-              "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [], "name": "saleConfig",
-                                                                                    "outputs": [
-                                                                                        {"internalType": "uint32",
-                                                                                         "name": "auctionSaleStartTime",
-                                                                                         "type": "uint32"},
-                                                                                        {"internalType": "uint32",
-                                                                                         "name": "publicSaleStartTime",
-                                                                                         "type": "uint32"},
-                                                                                        {"internalType": "uint64",
-                                                                                         "name": "mintlistPrice",
-                                                                                         "type": "uint64"},
-                                                                                        {"internalType": "uint64",
-                                                                                         "name": "publicPrice",
-                                                                                         "type": "uint64"},
-                                                                                        {"internalType": "uint32",
-                                                                                         "name": "publicSaleKey",
-                                                                                         "type": "uint32"}],
-                                                                                    "stateMutability": "view",
-                                                                                    "type": "function"}, {
-              "inputs": [{"internalType": "address[]", "name": "addresses", "type": "address[]"},
-                         {"internalType": "uint256[]", "name": "numSlots", "type": "uint256[]"}],
-              "name": "seedAllowlist", "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {
-              "inputs": [{"internalType": "address", "name": "operator", "type": "address"},
-                         {"internalType": "bool", "name": "approved", "type": "bool"}], "name": "setApprovalForAll",
-              "outputs": [], "stateMutability": "nonpayable", "type": "function"},
-          {"inputs": [{"internalType": "uint32", "name": "timestamp", "type": "uint32"}],
-           "name": "setAuctionSaleStartTime", "outputs": [], "stateMutability": "nonpayable", "type": "function"},
-          {"inputs": [{"internalType": "string", "name": "baseURI", "type": "string"}], "name": "setBaseURI",
-           "outputs": [], "stateMutability": "nonpayable", "type": "function"},
-          {"inputs": [{"internalType": "uint256", "name": "quantity", "type": "uint256"}], "name": "setOwnersExplicit",
-           "outputs": [], "stateMutability": "nonpayable", "type": "function"},
-          {"inputs": [{"internalType": "uint32", "name": "key", "type": "uint32"}], "name": "setPublicSaleKey",
-           "outputs": [], "stateMutability": "nonpayable", "type": "function"},
-          {"inputs": [{"internalType": "bytes4", "name": "interfaceId", "type": "bytes4"}], "name": "supportsInterface",
-           "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "view",
-           "type": "function"},
-          {"inputs": [], "name": "symbol", "outputs": [{"internalType": "string", "name": "", "type": "string"}],
-           "stateMutability": "view", "type": "function"},
-          {"inputs": [{"internalType": "uint256", "name": "index", "type": "uint256"}], "name": "tokenByIndex",
-           "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
-           "type": "function"}, {"inputs": [{"internalType": "address", "name": "owner", "type": "address"},
-                                            {"internalType": "uint256", "name": "index", "type": "uint256"}],
-                                 "name": "tokenOfOwnerByIndex",
-                                 "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                                 "stateMutability": "view", "type": "function"},
-          {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "tokenURI",
-           "outputs": [{"internalType": "string", "name": "", "type": "string"}], "stateMutability": "view",
-           "type": "function"},
-          {"inputs": [], "name": "totalSupply", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-           "stateMutability": "view", "type": "function"}, {
-              "inputs": [{"internalType": "address", "name": "from", "type": "address"},
-                         {"internalType": "address", "name": "to", "type": "address"},
-                         {"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "transferFrom",
-              "outputs": [], "stateMutability": "nonpayable", "type": "function"},
-          {"inputs": [{"internalType": "address", "name": "newOwner", "type": "address"}], "name": "transferOwnership",
-           "outputs": [], "stateMutability": "nonpayable", "type": "function"},
-          {"inputs": [], "name": "withdrawMoney", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]
+import json
+from web3.providers.rpc import HTTPProvider
+from tqdm import tqdm
+RCC_ADDRESS = "0xED5AF388653567Af2F388E6224dC7C4b3241C544"
+ABI = [
+{"inputs": [{"internalType": "uint256", "name": "maxBatchSize_", "type": "uint256"},
+                  {"internalType": "uint256", "name": "collectionSize_", "type": "uint256"},
+                  {"internalType": "uint256", "name": "amountForAuctionAndDev_", "type": "uint256"},
+                  {"internalType": "uint256", "name": "amountForDevs_", "type": "uint256"}],
+"stateMutability": "nonpayable","type": "constructor"},
+{"anonymous": False, "inputs": [
+                    {"indexed": True, "internalType": "address", "name": "owner", "type": "address"},
+                    {"indexed": True, "internalType": "address", "name": "approved", "type": "address"},
+                    {"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}],
+ "name": "Approval", "type": "event"}, {"anonymous": False, "inputs": [
+{"indexed": True, "internalType": "address", "name": "owner", "type": "address"},
+{"indexed": True, "internalType": "address", "name": "operator", "type": "address"},
+{"indexed": False, "internalType": "bool", "name": "approved", "type": "bool"}], "name": "ApprovalForAll",
+                                                                                    "type": "event"},
+      {"anonymous": False,
+       "inputs": [{"indexed": True, "internalType": "address", "name": "previousOwner", "type": "address"},
+                  {"indexed": True, "internalType": "address", "name": "newOwner", "type": "address"}],
+       "name": "OwnershipTransferred", "type": "event"}, {"anonymous": False, "inputs": [
+    {"indexed": True, "internalType": "address", "name": "from", "type": "address"},
+    {"indexed": True, "internalType": "address", "name": "to", "type": "address"},
+    {"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "Transfer",
+                                                          "type": "event"},
+      {"inputs": [], "name": "AUCTION_DROP_INTERVAL",
+       "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
+       "type": "function"}, {"inputs": [], "name": "AUCTION_DROP_PER_STEP",
+                             "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+                             "stateMutability": "view", "type": "function"},
+      {"inputs": [], "name": "AUCTION_END_PRICE",
+       "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
+       "type": "function"}, {"inputs": [], "name": "AUCTION_PRICE_CURVE_LENGTH",
+                             "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+                             "stateMutability": "view", "type": "function"},
+      {"inputs": [], "name": "AUCTION_START_PRICE",
+       "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
+       "type": "function"},
+      {"inputs": [{"internalType": "address", "name": "", "type": "address"}], "name": "allowlist",
+       "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
+       "type": "function"},
+      {"inputs": [], "name": "allowlistMint", "outputs": [], "stateMutability": "payable", "type": "function"},
+      {"inputs": [], "name": "amountForAuctionAndDev",
+       "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
+       "type": "function"}, {"inputs": [], "name": "amountForDevs",
+                             "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+                             "stateMutability": "view", "type": "function"}, {
+          "inputs": [{"internalType": "address", "name": "to", "type": "address"},
+                     {"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "approve",
+          "outputs": [], "stateMutability": "nonpayable", "type": "function"},
+      {"inputs": [{"internalType": "uint256", "name": "quantity", "type": "uint256"}], "name": "auctionMint",
+       "outputs": [], "stateMutability": "payable", "type": "function"},
+      {"inputs": [{"internalType": "address", "name": "owner", "type": "address"}], "name": "balanceOf",
+       "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
+       "type": "function"},
+      {"inputs": [{"internalType": "uint256", "name": "quantity", "type": "uint256"}], "name": "devMint",
+       "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {
+          "inputs": [{"internalType": "uint64", "name": "mintlistPriceWei", "type": "uint64"},
+                     {"internalType": "uint64", "name": "publicPriceWei", "type": "uint64"},
+                     {"internalType": "uint32", "name": "publicSaleStartTime", "type": "uint32"}],
+          "name": "endAuctionAndSetupNonAuctionSaleInfo", "outputs": [], "stateMutability": "nonpayable",
+          "type": "function"},
+      {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "getApproved",
+       "outputs": [{"internalType": "address", "name": "", "type": "address"}], "stateMutability": "view",
+       "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "_saleStartTime", "type": "uint256"}],
+                             "name": "getAuctionPrice",
+                             "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+                             "stateMutability": "view", "type": "function"},
+      {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "getOwnershipData",
+       "outputs": [{"components": [{"internalType": "address", "name": "addr", "type": "address"},
+                                   {"internalType": "uint64", "name": "startTimestamp", "type": "uint64"}],
+                    "internalType": "struct ERC721A.TokenOwnership", "name": "", "type": "tuple"}],
+       "stateMutability": "view", "type": "function"}, {
+          "inputs": [{"internalType": "address", "name": "owner", "type": "address"},
+                     {"internalType": "address", "name": "operator", "type": "address"}],
+          "name": "isApprovedForAll", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+          "stateMutability": "view", "type": "function"}, {
+          "inputs": [{"internalType": "uint256", "name": "publicPriceWei", "type": "uint256"},
+                     {"internalType": "uint256", "name": "publicSaleKey", "type": "uint256"},
+                     {"internalType": "uint256", "name": "publicSaleStartTime", "type": "uint256"}],
+          "name": "isPublicSaleOn", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+          "stateMutability": "view", "type": "function"}, {"inputs": [], "name": "maxPerAddressDuringMint",
+                                                           "outputs": [{"internalType": "uint256", "name": "",
+                                                                        "type": "uint256"}],
+                                                           "stateMutability": "view", "type": "function"},
+      {"inputs": [], "name": "name", "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+       "stateMutability": "view", "type": "function"}, {"inputs": [], "name": "nextOwnerToExplicitlySet",
+                                                        "outputs": [{"internalType": "uint256", "name": "",
+                                                                     "type": "uint256"}], "stateMutability": "view",
+                                                        "type": "function"},
+      {"inputs": [{"internalType": "address", "name": "owner", "type": "address"}], "name": "numberMinted",
+       "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
+       "type": "function"},
+      {"inputs": [], "name": "owner", "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+       "stateMutability": "view", "type": "function"},
+      {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "ownerOf",
+       "outputs": [{"internalType": "address", "name": "", "type": "address"}], "stateMutability": "view",
+       "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "quantity", "type": "uint256"},
+                                        {"internalType": "uint256", "name": "callerPublicSaleKey",
+                                         "type": "uint256"}], "name": "publicSaleMint", "outputs": [],
+                             "stateMutability": "payable", "type": "function"},
+      {"inputs": [], "name": "renounceOwnership", "outputs": [], "stateMutability": "nonpayable",
+       "type": "function"}, {"inputs": [{"internalType": "address", "name": "from", "type": "address"},
+                                        {"internalType": "address", "name": "to", "type": "address"},
+                                        {"internalType": "uint256", "name": "tokenId", "type": "uint256"}],
+                             "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable",
+                             "type": "function"}, {
+          "inputs": [{"internalType": "address", "name": "from", "type": "address"},
+                     {"internalType": "address", "name": "to", "type": "address"},
+                     {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+                     {"internalType": "bytes", "name": "_data", "type": "bytes"}], "name": "safeTransferFrom",
+          "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [], "name": "saleConfig",
+                                                                                "outputs": [
+                                                                                    {"internalType": "uint32",
+                                                                                     "name": "auctionSaleStartTime",
+                                                                                     "type": "uint32"},
+                                                                                    {"internalType": "uint32",
+                                                                                     "name": "publicSaleStartTime",
+                                                                                     "type": "uint32"},
+                                                                                    {"internalType": "uint64",
+                                                                                     "name": "mintlistPrice",
+                                                                                     "type": "uint64"},
+                                                                                    {"internalType": "uint64",
+                                                                                     "name": "publicPrice",
+                                                                                     "type": "uint64"},
+                                                                                    {"internalType": "uint32",
+                                                                                     "name": "publicSaleKey",
+                                                                                     "type": "uint32"}],
+                                                                                "stateMutability": "view",
+                                                                                "type": "function"}, {
+          "inputs": [{"internalType": "address[]", "name": "addresses", "type": "address[]"},
+                     {"internalType": "uint256[]", "name": "numSlots", "type": "uint256[]"}],
+          "name": "seedAllowlist", "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {
+          "inputs": [{"internalType": "address", "name": "operator", "type": "address"},
+                     {"internalType": "bool", "name": "approved", "type": "bool"}], "name": "setApprovalForAll",
+          "outputs": [], "stateMutability": "nonpayable", "type": "function"},
+      {"inputs": [{"internalType": "uint32", "name": "timestamp", "type": "uint32"}],
+       "name": "setAuctionSaleStartTime", "outputs": [], "stateMutability": "nonpayable", "type": "function"},
+      {"inputs": [{"internalType": "string", "name": "baseURI", "type": "string"}], "name": "setBaseURI",
+       "outputs": [], "stateMutability": "nonpayable", "type": "function"},
+      {"inputs": [{"internalType": "uint256", "name": "quantity", "type": "uint256"}], "name": "setOwnersExplicit",
+       "outputs": [], "stateMutability": "nonpayable", "type": "function"},
+      {"inputs": [{"internalType": "uint32", "name": "key", "type": "uint32"}], "name": "setPublicSaleKey",
+       "outputs": [], "stateMutability": "nonpayable", "type": "function"},
+      {"inputs": [{"internalType": "bytes4", "name": "interfaceId", "type": "bytes4"}], "name": "supportsInterface",
+       "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "view",
+       "type": "function"},
+      {"inputs": [], "name": "symbol", "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+       "stateMutability": "view", "type": "function"},
+      {"inputs": [{"internalType": "uint256", "name": "index", "type": "uint256"}], "name": "tokenByIndex",
+       "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view",
+       "type": "function"}, {"inputs": [{"internalType": "address", "name": "owner", "type": "address"},
+                                        {"internalType": "uint256", "name": "index", "type": "uint256"}],
+                             "name": "tokenOfOwnerByIndex",
+                             "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+                             "stateMutability": "view", "type": "function"},
+      {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "tokenURI",
+       "outputs": [{"internalType": "string", "name": "", "type": "string"}], "stateMutability": "view",
+       "type": "function"},
+      {"inputs": [], "name": "totalSupply", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+       "stateMutability": "view", "type": "function"}, {
+          "inputs": [{"internalType": "address", "name": "from", "type": "address"},
+                     {"internalType": "address", "name": "to", "type": "address"},
+                     {"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "transferFrom",
+          "outputs": [], "stateMutability": "nonpayable", "type": "function"},
+      {"inputs": [{"internalType": "address", "name": "newOwner", "type": "address"}], "name": "transferOwnership",
+       "outputs": [], "stateMutability": "nonpayable", "type": "function"},
+      {"inputs": [], "name": "withdrawMoney", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]
 
-    class JSONifiedState(EventScannerState):
-        def __init__(self, ens):
-            self.state = None
-            self.fname = "test-state.json"
-            self.last_save = 0
-            self.ens = ens
+class State(EventScannerState):
+    def __init__(self, ens):
+        self.state = None
+        self.fname = "test-state.json"
+        self.last_save = 0
+        self.ens = ens
 
-        def reset(self):
+    def reset(self):
+        self.state = {
+            "last_scanned_block": INITIAL_ETHEREUM_BLOCK_NUMBER,
+            "blocks": {},
+        }
+
+    def restore(self):
+        try:
+
+            # self.state = json.load(open(self.fname, "rt"))
+            record = ScannerState.objects.latest("created_at")
             self.state = {
-                "last_scanned_block": INITIAL_ETHEREUM_BLOCK_NUMBER,
-                "blocks": {},
+                  "last_scanned_block": record.last_scanned_block,
+                  "blocks": {}
             }
+            print(f"Restored the state, previously {self.state['last_scanned_block']} blocks have been scanned")
+        # except (IOError, json.decoder.JSONDecodeError):
+        except ScannerState.DoesNotExist:
+            print("State starting from scratch")
+            self.reset()
 
-        def restore(self):
-            try:
-                self.state = json.load(open(self.fname, "rt"))
-                print(f"Restored the state, previously {self.state['last_scanned_block']} blocks have been scanned")
-            except (IOError, json.decoder.JSONDecodeError):
-                print("State starting from scratch")
-                self.reset()
+    def save(self):
+        # with open(self.fname, "wt") as f:
+        #     json.dump(self.state, f)
+        print(self.state["blocks"])
+        if self.state["blocks"]:
+            for block_number, block_value in self.state["blocks"].items():
+                for tx_hash, event_logs in block_value.items():
+                    for log_index, transfer_data in event_logs.items():
+                        TransferHistory.objects.update_or_create(
+                            block_number = block_number,
+                            from_address = transfer_data["from"],
+                            to_address = transfer_data["to"],
+                            from_ens = transfer_data["from_ens"],
+                           to_ens = transfer_data["to_ens"],
+                            tx_hash = tx_hash,
+                            token_id = transfer_data["token_id"],
+                            timestamp = transfer_data["timestamp"],
+                            defaults={},
+                        )
 
-        def save(self):
-            with open(self.fname, "wt") as f:
-                json.dump(self.state, f)
-            self.last_save = time.time()
-        def get_last_scanned_block(self):
-            return self.state["last_scanned_block"]
+        ScannerState.objects.update_or_create(defaults={"last_scanned_block": self.state['last_scanned_block']})
+        print("LAST SCANNED:", self.state['last_scanned_block'])
+        self.last_save = time.time()
 
-        def delete_data(self, since_block):
-            for block_num in range(since_block, self.get_last_scanned_block()):
-                if block_num in self.state["blocks"]:
-                    del self.state["blocks"][block_num]
 
-        def start_chunk(self, block_number, chunk_size):
-            pass
 
-        def end_chunk(self, block_number):
-            self.state["last_scanned_block"] = block_number
-            if time.time() - self.last_save > 60:
-                self.save()
 
-        def process_event(self, block_when: datetime.datetime, event: AttributeDict) -> str:
-            log_index = event.logIndex
-            txhash = event.transactionHash.hex()
-            block_number = event.blockNumber
-            args = event["args"]
-            transfer = {
-                "from": args["from"],
-                "from_ens": self.ens.name(args["from"]),
-                "to": args.to,
-                "to_ens": self.ens.name(args.to),
-                "tx_hash": txhash,
-                "token_id": args.tokenId,
-                "timestamp": block_when.isoformat(),
-            }
-            if block_number not in self.state["blocks"]:
-                self.state["blocks"][block_number] = {}
+    def get_last_scanned_block(self):
+        return self.state["last_scanned_block"]
 
-            block = self.state["blocks"][block_number]
-            if txhash not in block:
-                self.state["blocks"][block_number][txhash] = {}
+    def delete_data(self, since_block):
+        for block_num in range(since_block, self.get_last_scanned_block()):
+            if block_num in self.state["blocks"]:
+                del self.state["blocks"][block_num]
 
-            self.state["blocks"][block_number][txhash][log_index] = transfer
-            return f"{block_number}-{txhash}-{log_index}"
+    def start_chunk(self, block_number, chunk_size):
+        pass
 
-    def run_fetch(url):
+    def end_chunk(self, block_number):
+        self.state["last_scanned_block"] = block_number
+        if time.time() - self.last_save > 60:
+            self.save()
 
-        if len(sys.argv) < 2:
-            print("Usage: eventscanner.py http://your-node-url")
-            sys.exit(1)
+    def process_event(self, block_when: datetime.datetime, event: AttributeDict) -> str:
+        log_index = event.logIndex
+        txhash = event.transactionHash.hex()
+        block_number = event.blockNumber
+        args = event["args"]
+        transfer = {
+            "from": args["from"],
+            "from_ens": self.ens.name(args["from"]),
+            "to": args.to,
+            "to_ens": self.ens.name(args.to),
+            "tx_hash": txhash,
+            "token_id": args.tokenId,
+            "timestamp": block_when.isoformat(),
+        }
+        if block_number not in self.state["blocks"]:
+            self.state["blocks"][block_number] = {}
 
-        api_url = sys.argv[1]
-        logging.basicConfig(level=logging.INFO)
+        block = self.state["blocks"][block_number]
+        if txhash not in block:
+            self.state["blocks"][block_number][txhash] = {}
 
-        provider = HTTPProvider(api_url)
-        provider.middlewares.clear()
-        ns = ENS(provider)
+        self.state["blocks"][block_number][txhash][log_index] = transfer
+        return f"{block_number}-{txhash}-{log_index}"
 
-        web3 = Web3(provider)
-        ERC721 = web3.eth.contract(abi=ABI)
-        state = JSONifiedState(ns)
-        state.restore()
-        scanner = EventScanner(
-            web3=web3,
-            contract=ERC721,
-            state=state,
-            events=[ERC721.events.Transfer],
-            filters={"address": RCC_ADDRESS},
-            max_chunk_scan_size=5000
-        )
-        chain_reorg_safety_blocks = 10
-        scanner.delete_potentially_forked_block_data(state.get_last_scanned_block() - chain_reorg_safety_blocks)
-        start_block = max(state.get_last_scanned_block() - chain_reorg_safety_blocks, 0)
-        end_block = scanner.get_suggested_scan_end_block()
-        blocks_to_scan = end_block - start_block
+def run_fetch(url):
 
-        print(f"Scanning events from blocks {start_block} - {end_block}")
-        start = time.time()
-        with tqdm(total=blocks_to_scan) as progress_bar:
-            def _update_progress(start, end, current, current_block_timestamp, chunk_size, events_count):
-                if current_block_timestamp:
-                    formatted_time = current_block_timestamp.strftime("%d-%m-%Y")
-                else:
-                    formatted_time = "no block time available"
-                progress_bar.set_description(f"Current block: {current} ({formatted_time}), blocks in a scan batch: {chunk_size}, events processed in a batch {events_count}")
-                progress_bar.update(chunk_size)
-            result, total_chunks_scanned = scanner.scan(start_block, end_block, progress_callback=_update_progress)
+    # if len(sys.argv) < 2:
+    #     print("Usage: eventscanner.py http://your-node-url")
+    #     sys.exit(1)
+    #
+    # api_url = sys.argv[1]
+    api_url = url
+    logging.basicConfig(level=logging.INFO)
 
-        state.save()
-        duration = time.time() - start
-        print(f"Scanned total {len(result)} Transfer events, in {duration} seconds, total {total_chunks_scanned} chunk scans performed")
+    provider = HTTPProvider(api_url)
+    provider.middlewares.clear()
+    ns = ENS(provider)
 
-    run_fetch()
+    web3 = Web3(provider)
+    ERC721 = web3.eth.contract(abi=ABI)
+    state = State(ns)
+    state.restore()
+    scanner = EventScanner(
+        web3=web3,
+        contract=ERC721,
+        state=state,
+        events=[ERC721.events.Transfer],
+        filters={"address": RCC_ADDRESS},
+        max_chunk_scan_size=10
+    )
+    chain_reorg_safety_blocks = 10
+    scanner.delete_potentially_forked_block_data(state.get_last_scanned_block() - chain_reorg_safety_blocks)
+    start_block = max(state.get_last_scanned_block() - chain_reorg_safety_blocks, 0)
+    till_block = start_block+10
+    end_block = scanner.get_suggested_scan_end_block()
+    blocks_to_scan = end_block - start_block
+
+    print(f"Scanning events from blocks {start_block} - {till_block}")
+    start = time.time()
+    # with tqdm(total=blocks_to_scan) as progress_bar:
+    #     def _update_progress(start, end, current, current_block_timestamp, chunk_size, events_count):
+    # if current_block_timestamp:
+    #     formatted_time = current_block_timestamp.strftime("%d-%m-%Y")
+    # else:
+    #     formatted_time = "no block time available"
+            # progress_bar.set_description(f"Current block: {current} ({formatted_time}), blocks in a scan batch: {chunk_size}, events processed in a batch {events_count}")
+            # progress_bar.update(chunk_size)
+    result, total_chunks_scanned = scanner.scan(start_block, till_block, end_block) # end_block) # , progress_callback=_update_progress)
+
+    state.save()
+    duration = time.time() - start
+    print(f"Scanned total {len(result)} Transfer events, in {duration} seconds, total {total_chunks_scanned} chunk scans performed")
+
+run_fetch("https://mainnet.infura.io/v3/9317e901ece9489c8fa9b44078283316")
