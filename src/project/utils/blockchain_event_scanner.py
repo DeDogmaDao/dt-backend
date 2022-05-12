@@ -435,7 +435,7 @@ class State(EventScannerState):
                             from_address = transfer_data["from"],
                             to_address = transfer_data["to"],
                             from_ens = transfer_data["from_ens"],
-                           to_ens = transfer_data["to_ens"],
+                            to_ens = transfer_data["to_ens"],
                             tx_hash = tx_hash,
                             token_id = transfer_data["token_id"],
                             timestamp = transfer_data["timestamp"],
