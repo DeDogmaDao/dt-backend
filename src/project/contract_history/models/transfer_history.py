@@ -38,3 +38,7 @@ class TransferHistory(BaseModel):
     timestamp = models.DateTimeField(
         verbose_name=_("Timestamp")
     )
+    analyzed = models.BooleanField(
+        verbose_name=_("Analyzed"),
+        default=False
+    )
