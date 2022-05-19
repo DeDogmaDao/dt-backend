@@ -9,43 +9,62 @@ class NFT(BaseModel):
         verbose_name=_("Token id")
     )
     image_2d = models.ImageField(
-        verbose_name=_("Image 2d")
+        verbose_name=_("Image 2d"),
+        null=True,
+        blank=True
     )
     image_3d = models.ImageField(
-        verbose_name=_("Image 3d")
+        verbose_name=_("Image 3d"),
+        null=True,
+        blank=True
     )
     speciality = models.CharField(
         verbose_name=_("Speciality"),
         max_length=32,
-        choices=CounterType.CHOICES
+        choices=CounterType.CHOICES,
+        null=True,
+        blank=True
     )
     counter = models.PositiveIntegerField(
-        verbose_name=_("Counter")
+        verbose_name=_("Counter"),
+        null=True,
+        blank=True
     )
     side = models.CharField(
         verbose_name=_("Side"),
         max_length=100,
         choices=Side.CHOICES,
-        null=True
+        null=True,
+        blank=True
     )
     multiply_num = models.PositiveIntegerField(
-        verbose_name=_("Multiply number")
+        verbose_name=_("Multiply number"),
+        null=True,
+        blank=True
     )
     sum_num = models.PositiveIntegerField(
-        verbose_name=_("Sum number")
+        verbose_name=_("Sum number"),
+        null=True,
+        blank=True
     )
     rarity = models.CharField(
         verbose_name=_("Rarity"),
         max_length=32,
-        choices=Rarity.CHOICES
+        choices=Rarity.CHOICES,
+        null=True,
+        blank=True
     )
     blood = models.CharField(
         verbose_name=_("Blood"),
         max_length=32,
-        choices=BloodType.CHOICES
+        choices=BloodType.CHOICES,
+        null=True,
+        blank=True
     )
     blood_portion = models.PositiveIntegerField(
-        verbose_name=_("Blood portion")
+        verbose_name=_("Blood portion"),
+        null=True,
+        blank=True
     )
     is_upgraded = models.BooleanField(
         verbose_name=_("Is upgraded"),
