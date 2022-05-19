@@ -70,6 +70,10 @@ class NFT(BaseModel):
         verbose_name=_("Is upgraded"),
         default=False
     )
+    is_revealed = models.BooleanField(
+        verbose_name=_("Is revealed"),
+        default=False
+    )
     #
     # class Meta:
     #     app_label = "nft"
