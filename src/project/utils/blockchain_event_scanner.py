@@ -14,10 +14,10 @@ from web3._utils.filters import construct_event_filter_params
 from web3._utils.events import get_event_data
 
 from project.contract_history.models import TransferHistory, ScannerState
+from project.nft.models import NFT
 
-# from project.settings import INITIAL_ETHEREUM_BLOCK_NUMBER
+from project.settings import INITIAL_ETHEREUM_BLOCK_NUMBER
 
-INITIAL_ETHEREUM_BLOCK_NUMBER = 14685000
 # INITIAL_ETHEREUM_BLOCK_NUMBER_TEMP = 13975838
 
 # tx_id required
@@ -487,6 +487,14 @@ class State(EventScannerState):
             self.state["blocks"][block_number][txhash] = {}
 
         self.state["blocks"][block_number][txhash][log_index] = transfer
+        # mint from zero
+        if transfer["from"] == "0x0000000000000000000000000000000000000000":
+            NFT.objects.update_or_create(
+                defaults={"token_id": transfer["token_id"]}
+            )
+        # burn
+        if transfer["to"] == "0x0000000000000000000000000000000000000000":
+            NFT.objects.filter(token_id=transfer["token_id"]).update(deleted_at=transfer["timestamp"])
         return f"{block_number}-{txhash}-{log_index}"
 
 def run_fetch(url):
