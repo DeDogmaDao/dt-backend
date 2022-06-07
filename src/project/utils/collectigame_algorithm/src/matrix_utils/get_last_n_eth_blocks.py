@@ -1,6 +1,7 @@
 from web3 import Web3
 
-infura_addr = "https://mainnet.infura.io/v3/9317e901ece9489c8fa9b44078283316"
+# infura_addr = "https://mainnet.infura.io/v3/9317e901ece9489c8fa9b44078283316"
+infura_addr = "https://blockchain.dedogmadao.com"
 
 def get_block_and_save(block_number=None):
     web3_client = Web3(Web3.HTTPProvider(infura_addr))
