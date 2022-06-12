@@ -3,7 +3,7 @@ from celery.utils.log import get_task_logger
 from project import celery_app
 from project.utils.base_task import BaseTask
 
-from project.utils.blockchain_event_scanner import run_fetch
+from project.utils.blockchain_event_scanner_v2 import Scanner
 
 
 class FetchContractHistoryTask(BaseTask):
@@ -11,9 +11,8 @@ class FetchContractHistoryTask(BaseTask):
     logger = get_task_logger(__name__)
 
     def _run(self, *args, **kwargs):
-        run_fetch(
-            "https://mainnet.infura.io/v3/9317e901ece9489c8fa9b44078283316")  # TODO: add infura url into github secrets
-
+        scanner = Scanner()
+        scanner.run()
 
 celery_app.tasks.register(FetchContractHistoryTask())
 celery_app.add_periodic_task(10.0, FetchContractHistoryTask())
