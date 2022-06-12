@@ -84,7 +84,7 @@ class EventScanner:
         return 1
 
     def get_suggested_scan_end_block(self):
-        return self.web3.eth.blockNumber - 12
+        return self.web3.eth.blockNumber # - 12
 
     def get_last_scanned_block(self) -> int:
         return self.state.get_last_scanned_block()
@@ -140,6 +140,7 @@ class EventScanner:
         return int(current_chuck_size)
 
     def scan(self, start_block, till_block, end_block, start_chunk_size=20): #, progress_callback=Optional[Callable]) -> Tuple[list, int]:
+        print("start ", start_block, "till", till_block, "end", end_block)
         assert start_block <= end_block and start_block <= till_block and till_block <= end_block
         current_block = start_block
         chunk_size = start_chunk_size
@@ -1860,7 +1861,7 @@ class State(EventScannerState):
 
     def reset(self):
         self.state = {
-            "last_scanned_block": INITIAL_ETHEREUM_BLOCK_NUMBER,
+            "last_scanned_block": 0,
             "blocks": {},
         }
 
@@ -1978,13 +1979,13 @@ def run_fetch(url):
         contract=ERC721,
         state=state,
         events=[ERC721.events.Transfer],
-        filters={"address": web3.toChecksumAddress(RCC_ADDRESS)},
+        filters={"address": Web3.toChecksumAddress(RCC_ADDRESS)},
         max_chunk_scan_size=10
     )
     chain_reorg_safety_blocks = 10
     scanner.delete_potentially_forked_block_data(state.get_last_scanned_block() - chain_reorg_safety_blocks)
     start_block = max(state.get_last_scanned_block() - chain_reorg_safety_blocks, 0)
-    till_block = start_block+10
+    till_block = start_block+5
     end_block = scanner.get_suggested_scan_end_block()
     blocks_to_scan = end_block - start_block
 
