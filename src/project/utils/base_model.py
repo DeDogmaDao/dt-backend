@@ -12,7 +12,8 @@ class BaseModel(models.Model):
     )
     deleted_at = models.DateTimeField(
         verbose_name=_("Delete at"),
-        null=True
+        null=True,
+        blank=True
     )
 
     class Meta:

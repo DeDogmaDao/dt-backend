@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     "project.nft",
     "project.round",
     "project.whitelist",
-    "project.blockchain_transaction"
+    "project.blockchain_transaction",
+    "project.contract_history"
 ]
 
 MIDDLEWARE = [
@@ -126,6 +127,12 @@ USE_L10N = True
 
 USE_TZ = True
 
+# INITIAL_ETHEREUM_BLOCK_NUMBER = 14685733 # (Apr-30-2022 01:00:53 PM +UTC)
+IS_TESTNET = get_bool_from_env('IS_TESTNET', True)
+INITIAL_ETHEREUM_BLOCK_NUMBER = 14685733
+RPC_URL = os.environ.get("RPC_URL")
+CONTRACT_ADDRESS = os.environ.get("CONTRACT_ADDRESS")
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -143,8 +150,8 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CELERY_BROKER_URL = 'redis://redis:6379/2'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/2'
+CELERY_BROKER_URL = 'redis://localhost:6379/2'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/2'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
