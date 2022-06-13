@@ -65,7 +65,7 @@ jobs:
       POSTGRES_DB: ${{ secrets[format('{0}POSTGRES_DB', needs.environ_step.outputs.prefix)] }}
       DBPOOL_HOST: ${{ secrets[format('{0}DBPOOL_HOST', needs.environ_step.outputs.prefix)] }}
       DBPOOL_PORT: ${{ secrets[format('{0}DBPOOL_PORT', needs.environ_step.outputs.prefix)] }}
-      CONTRACT_ADDRESS: ${{ secrets['CONTRACT_ADDRESS'] }}
-      IS_TESTNET: ${{ secrets['IS_TESTNET'] }}
-      RPC_URL: ${{ secrets['RPC_URL'] }}
+      CONTRACT_ADDRESS: ${{ secrets[format('{0}CONTRACT_ADDRESS', needs.environ_step.outputs.prefix)] }}
+      IS_TESTNET: ${{ secrets[format('{0}IS_TESTNET', needs.environ_step.outputs.prefix)] }}
+      RPC_URL: ${{ secrets[format('{0}RPC_URL', needs.environ_step.outputs.prefix)] }}
 
