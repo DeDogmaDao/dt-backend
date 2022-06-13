@@ -42,12 +42,6 @@ class Scanner:
     transfer_data = Web3.toJSON(transfer_data)
     transfer_data = json.loads(transfer_data)
 
-    for data in transfer_data:
-        print("###", data["args"])
-        print("$$$", data["event"])
-        print("IIII", data["transactionHash"])
-        print("OOOO", data["blockNumber"])
-    print(BASE_DIR)
     return "success", transfer_data
 
   def get_initial_block(self):
@@ -71,10 +65,8 @@ class Scanner:
     last_time = block_info["timestamp"]
     return datetime.datetime.utcfromtimestamp(last_time)
 
-  def store_data(self, data):
-    print(data)
+  def store_data(self, data, scanned_block):
     for d in data:
-      # TODO: aggregate OpenSee Transfers
       timestamp = self.get_block_timestamp(d["blockNumber"])
       TransferHistory.objects.update_or_create(
         block_number=d["blockNumber"],
@@ -87,11 +79,12 @@ class Scanner:
         timestamp=timestamp,
         defaults={},
       )
-      ScannerState.objects.update_or_create(defaults={"last_scanned_block": d["blockNumber"]})
+      ScannerState.objects.update_or_create(defaults={"last_scanned_block": scanned_block})
       # mint from zero
       if d["args"].get("from") == NULL_ADDRESS:
-        NFT.objects.update_or_create(
-          defaults={"token_id": d["args"].get("tokenId")}
+        NFT.objects.get_or_create(
+          token_id=d["args"].get("tokenId"),
+          defaults={}
         )
       # burn
       if d["args"].get("to") == NULL_ADDRESS:
@@ -106,8 +99,9 @@ class Scanner:
 
     if not init_block < end_block and not init_block + \
            self.default_max_chunk_for_iteration < end_block:
+      print("Everything is update!")
       return
     # TODO: need 3 or 5 retry to break down chunk
     status, data = self.fetch_data(init_block, init_block + self.default_max_chunk_for_iteration)
     if status == "success":
-      self.store_data(data)
+      self.store_data(data, end_block)

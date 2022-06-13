@@ -17,6 +17,7 @@ class FillFullDeckTask(BaseTask):
         self.fill_data()
 
     def fill_data(self):
+        # TODO: aggregate OpenSee Transfers
         try:
             round = Round.objects.get(finished=False)
             transfers = TransferHistory.objects.filter(
