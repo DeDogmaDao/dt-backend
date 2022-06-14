@@ -17,6 +17,9 @@ services:
       - POSTGRES_DB
       - DBPOOL_HOST
       - DBPOOL_PORT
+      - CONTRACT_ADDRESS
+      - IS_TESTNET
+      - RPC_URL
     command: sh /app/project/scripts/run.sh
     volumes:
       - staticfiles:/app/project/static
@@ -38,6 +41,9 @@ services:
       - POSTGRES_DB
       - DBPOOL_HOST
       - DBPOOL_PORT
+      - CONTRACT_ADDRESS
+      - IS_TESTNET
+      - RPC_URL
     command: sh /app/project/scripts/celery.sh
     working_dir: /app/project/src/
     volumes:
