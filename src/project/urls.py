@@ -19,7 +19,8 @@ from django.urls import path, include, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -39,7 +40,8 @@ patterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('api/profile/', include('project.nft.api.urls')),
+    path('api/v1/profile/', include('project.nft.api.urls')),
+    path('sample/v2/something/ping', api_view()(lambda request: Response({'ping':'pong'}))), # for testing
 ]
 
 urlpatterns = [
