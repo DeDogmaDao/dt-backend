@@ -1,6 +1,7 @@
 from django.db import models
 from project.utils.base_model import BaseModel
 from django.utils.translation import gettext_lazy as _
+from project.whitelist.enums import WhiteListType
 
 
 class Whitelist(BaseModel):
@@ -17,4 +18,10 @@ class Whitelist(BaseModel):
     signed_message = models.CharField(
         verbose_name=_("Signed message"),
         max_length=1024
+    )
+    whitelist_type = models.CharField(
+        verbose_name=_("Whitelist type"),
+        max_length=20,
+        choices=WhiteListType.CHOICES,
+        default=WhiteListType.COMMON
     )
