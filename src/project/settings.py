@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_yasg',
     "project.card_feature",
     "project.nft",
     "project.round",
@@ -130,6 +131,8 @@ USE_TZ = True
 # INITIAL_ETHEREUM_BLOCK_NUMBER = 14685733 # (Apr-30-2022 01:00:53 PM +UTC)
 IS_TESTNET = get_bool_from_env('IS_TESTNET', True)
 INITIAL_ETHEREUM_BLOCK_NUMBER = 14685733
+INITIAL_START_DATE = '2021-06-22T00:00:00+00:00'
+SNAPSHOT_CYCLES = 24 # hours
 RPC_URL = os.environ.get("RPC_URL")
 CONTRACT_ADDRESS = os.environ.get("CONTRACT_ADDRESS")
 

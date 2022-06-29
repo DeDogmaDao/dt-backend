@@ -20,20 +20,24 @@ class FillFullDeckTask(BaseTask):
         # TODO: aggregate OpenSee Transfers
         try:
             round = Round.objects.get(finished=False)
+        except Round.DoesNotExist:
+            print("No round yet")
+            Round.objects.create_round(
+                winners_total_prize=0,
+                eth_block_number=0
+            )
             transfers = TransferHistory.objects.filter(
                 analyzed=False
             ).order_by("id")
             for transfer in transfers:
                 nft, _created = NFT.objects.get_or_create(defaults={"token_id": transfer.token_id})
-                current_full_deck =FullDeck.objects.filter(round=round).count()
+                current_full_deck = FullDeck.objects.filter(round=round).count()
                 FullDeck.objects.create(
                     round=round,
                     nft=nft,
-                    deck_place=current_full_deck+1,
+                    deck_place=current_full_deck + 1,
                     wallet=transfer.to_address
                 )
-        except Round.DoesNotExist:
-            print("No round yet")
 
 
 celery_app.tasks.register(FillFullDeckTask())

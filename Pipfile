@@ -15,6 +15,7 @@ celery = "==5.1.2"
 redis = "*"
 tqdm = "==4.64.0"
 web3 = "==5.29.0"
+drf-yasg = "==1.20.0"
 
 [dev-packages]
 

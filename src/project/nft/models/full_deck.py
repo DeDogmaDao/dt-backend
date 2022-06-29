@@ -22,7 +22,7 @@ class FullDeck(BaseModel):
         verbose_name=_("Deck place")
     )
     wallet = models.CharField(
-        verbose_name=_("Deck place"),
+        verbose_name=_("Wallet"),
         max_length=1024
     )
     is_starter = models.BooleanField(
